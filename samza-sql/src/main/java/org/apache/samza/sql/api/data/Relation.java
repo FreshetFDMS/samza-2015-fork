@@ -16,25 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- ext {
-  elasticsearchVersion = "1.5.1"
-  jodaTimeVersion = "2.2"
-  joptSimpleVersion = "3.2"
-  jacksonVersion = "1.8.5"
-  junitVersion = "4.8.1"
-  mockitoVersion = "1.8.4"
-  scalaTestVersion = "2.2.4"
-  zkClientVersion = "0.3"
-  zookeeperVersion = "3.3.4"
-  metricsVersion = "2.2.0"
-  kafkaVersion = "0.8.2.1"
-  commonsHttpClientVersion = "3.1"
-  rocksdbVersion = "3.13.1"
-  yarnVersion = "2.6.1"
-  slf4jVersion = "1.6.2"
-  log4jVersion = "1.2.17"
-  guavaVersion = "17.0"
-  commonsCodecVersion = "1.9"
-  httpClientVersion="4.4.1"
-  commonsCollectionVersion = "3.2.1"
+
+package org.apache.samza.sql.api.data;
+
+import org.apache.samza.storage.kv.KeyValueStore;
+
+
+/**
+ * This class defines the general interface of <code>Relation</code>, which is defined as a map of <code>Tuple</code>.
+ *
+ * <p>The interface is defined as an extension to <code>KeyValueStore&lt;Object, Tuple&gt;</code>.
+ *
+ */
+
+public interface Relation extends KeyValueStore<Object, Tuple> {
+
+  /**
+   * Get the primary key field name for this table
+   *
+   * @return The name of the primary key field
+   */
+  String getPrimaryKey();
+
+  /**
+   * Get the name of the relation created by CREATE TABLE
+   *
+   * @return The relation name
+   */
+  EntityName getName();
 }

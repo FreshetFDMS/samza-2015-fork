@@ -16,25 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- ext {
-  elasticsearchVersion = "1.5.1"
-  jodaTimeVersion = "2.2"
-  joptSimpleVersion = "3.2"
-  jacksonVersion = "1.8.5"
-  junitVersion = "4.8.1"
-  mockitoVersion = "1.8.4"
-  scalaTestVersion = "2.2.4"
-  zkClientVersion = "0.3"
-  zookeeperVersion = "3.3.4"
-  metricsVersion = "2.2.0"
-  kafkaVersion = "0.8.2.1"
-  commonsHttpClientVersion = "3.1"
-  rocksdbVersion = "3.13.1"
-  yarnVersion = "2.6.1"
-  slf4jVersion = "1.6.2"
-  log4jVersion = "1.2.17"
-  guavaVersion = "17.0"
-  commonsCodecVersion = "1.9"
-  httpClientVersion="4.4.1"
-  commonsCollectionVersion = "3.2.1"
+
+package org.apache.samza.sql.operators.factory;
+
+import org.apache.samza.sql.api.operators.Operator;
+import org.apache.samza.sql.api.operators.spec.OperatorSpec;
+
+
+/**
+ * An abstract class that encapsulate the basic information and methods that all operator classes should implement.
+ *
+ */
+public abstract class SimpleOperator implements Operator {
+  /**
+   * The specification of this operator
+   */
+  private final OperatorSpec spec;
+
+  /**
+   * Ctor of <code>SimpleOperator</code> class
+   *
+   * @param spec The specification of this operator
+   */
+  public SimpleOperator(OperatorSpec spec) {
+    this.spec = spec;
+  }
+
+  @Override
+  public OperatorSpec getSpec() {
+    return this.spec;
+  }
+
 }

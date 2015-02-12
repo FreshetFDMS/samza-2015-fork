@@ -16,25 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- ext {
-  elasticsearchVersion = "1.5.1"
-  jodaTimeVersion = "2.2"
-  joptSimpleVersion = "3.2"
-  jacksonVersion = "1.8.5"
-  junitVersion = "4.8.1"
-  mockitoVersion = "1.8.4"
-  scalaTestVersion = "2.2.4"
-  zkClientVersion = "0.3"
-  zookeeperVersion = "3.3.4"
-  metricsVersion = "2.2.0"
-  kafkaVersion = "0.8.2.1"
-  commonsHttpClientVersion = "3.1"
-  rocksdbVersion = "3.13.1"
-  yarnVersion = "2.6.1"
-  slf4jVersion = "1.6.2"
-  log4jVersion = "1.2.17"
-  guavaVersion = "17.0"
-  commonsCodecVersion = "1.9"
-  httpClientVersion="4.4.1"
-  commonsCollectionVersion = "3.2.1"
+
+package org.apache.samza.sql.operators.window;
+
+public class WindowState {
+  public String startOffset = null;
+  public String endOffset = null;
+  public boolean isClosed = false;
+
+  public void open(String offset) {
+    this.isClosed = false;
+    this.startOffset = offset;
+  }
+
+  public void close(String offset) {
+    this.endOffset = offset;
+    this.isClosed = true;
+  }
+
+  public void advanceTo(String offset) {
+    this.endOffset = offset;
+  }
+
+  public boolean isClosed() {
+    return this.isClosed;
+  }
 }
