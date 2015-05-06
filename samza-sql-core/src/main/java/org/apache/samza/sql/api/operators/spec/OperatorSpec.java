@@ -19,9 +19,9 @@
 
 package org.apache.samza.sql.api.operators.spec;
 
-import java.util.List;
-
 import org.apache.samza.sql.api.data.EntityName;
+
+import java.util.List;
 
 
 /**
@@ -34,6 +34,15 @@ import org.apache.samza.sql.api.data.EntityName;
  *
  */
 public interface OperatorSpec {
+
+  /**
+   * Type of the operator represented by this spec.
+   */
+  public enum Type {
+    RELATION,
+    TUPLE
+  }
+
   /**
    * Interface method that returns the unique ID of the operator in a task
    *
@@ -61,4 +70,11 @@ public interface OperatorSpec {
    *
    */
   List<EntityName> getOutputNames();
+
+  /**
+   * Access method to get the type of this operator
+   *
+   * @return operator type
+   */
+  Type getType();
 }

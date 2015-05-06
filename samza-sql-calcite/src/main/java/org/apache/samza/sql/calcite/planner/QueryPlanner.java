@@ -26,6 +26,9 @@ import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.jdbc.CalcitePrepare;
 import org.apache.calcite.plan.*;
+import org.apache.calcite.plan.hep.HepPlanner;
+import org.apache.calcite.plan.hep.HepProgram;
+import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.rel.RelCollationTraitDef;
@@ -38,6 +41,9 @@ import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.ChainedSqlOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidator;
+import org.apache.samza.sql.calcite.planner.rules.FilterableStreamScanRule;
+import org.apache.samza.sql.calcite.planner.rules.ProjectableStreamScanRule;
+import org.apache.samza.sql.calcite.planner.rules.RemoveIdentityProjectRule;
 
 import java.util.List;
 
@@ -109,11 +115,12 @@ public class QueryPlanner {
 
   /**
    * Transform streaming query to a query plan.
-   * @param query streaming query in SQL with streaming extensions
+   *
+   * @param query   streaming query in SQL with streaming extensions
    * @param context query prepare context
    * @return query plan
    */
-  public RelNode getPlan(String query, CalcitePrepare.Context context) {
+  public RelNode getPlan(String query, CalcitePrepare.Context context, boolean optimize) {
     final JavaTypeFactory typeFactory = context.getTypeFactory();
     final CalciteConnectionConfig config = context.config();
 
@@ -159,9 +166,12 @@ public class QueryPlanner {
             planner,
             EnumerableConvention.INSTANCE);
 
-    /* TODO: Add query optimization. */
+    RelNode queryPlan = preparingStmt.getSqlToRelConverter(validator, catalogReader).convertQuery(validatedSqlNode, false, true);
+    if (optimize) {
+      return optimize(queryPlan);
+    }
 
-    return preparingStmt.getSqlToRelConverter(validator, catalogReader).convertQuery(validatedSqlNode, false, true);
+    return queryPlan;
   }
 
   /**
@@ -177,7 +187,7 @@ public class QueryPlanner {
                                                        org.apache.calcite.plan.Context externalContext,
                                                        RelOptCostFactory costFactory) {
     if (externalContext == null) {
-      externalContext = Contexts.withConfig(prepareContext.config());
+      externalContext = Contexts.of(prepareContext.config());
     }
 
     final VolcanoPlanner planner =
@@ -207,6 +217,17 @@ public class QueryPlanner {
     /* Note: Constant reduction rules were removed because current Calcite implementation doesn't use them. */
 
     return planner;
+  }
+
+  private RelNode optimize(RelNode rootRel) {
+    final HepProgram hepProgram = new HepProgramBuilder()
+        .addRuleInstance(FilterableStreamScanRule.INSTANCE)
+        .addRuleInstance(ProjectableStreamScanRule.INSTANCE)
+        .addRuleInstance(RemoveIdentityProjectRule.INSTANCE).build();
+    final HepPlanner planner = new HepPlanner(hepProgram);
+    planner.setRoot(rootRel);
+    rootRel = planner.findBestExp();
+    return rootRel;
   }
 
 }

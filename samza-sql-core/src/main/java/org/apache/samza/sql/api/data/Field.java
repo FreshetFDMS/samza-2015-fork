@@ -16,43 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.samza.sql.api.data;
 
-import java.util.List;
-import java.util.Map;
+/**
+ * Represent the definition of a field in a struct {@link org.apache.samza.sql.api.data.Schema}.
+ */
+public interface Field {
 
+  /**
+   * Returns the name of the field which is unique within its containing type.
+   * @return field name
+   */
+  String getName();
 
-public interface Schema {
+  /**
+   * Returns the ordinal of this field within its containing type.
+   * @return field index
+   */
+  int getIndex();
 
-  enum Type {
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    STRING,
-    BYTES,
-    STRUCT,
-    ARRAY,
-    MAP
-  };
-
-  Type getType();
-
-  Schema getElementType();
-
-  Schema getValueType();
-
-  Map<String, Schema> getFields();
-
-  List<Field> getFieldList();
-
-  Schema getFieldType(String fldName);
-
-  Data read(Object object);
-
-  Data transform(Data inputData);
-
-  boolean equals(Schema other);
+  /**
+   * Get the type of this field.
+   * @return field type
+   */
+  Schema getType();
 }

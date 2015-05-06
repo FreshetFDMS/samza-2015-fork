@@ -23,10 +23,14 @@ import org.apache.samza.sql.api.operators.RelationOperator;
 import org.apache.samza.sql.api.operators.SqlOperatorFactory;
 import org.apache.samza.sql.api.operators.TupleOperator;
 import org.apache.samza.sql.api.operators.spec.OperatorSpec;
+import org.apache.samza.sql.operators.insert.InsertToStreamOp;
+import org.apache.samza.sql.operators.insert.InsertToStreamSpec;
 import org.apache.samza.sql.operators.partition.PartitionOp;
 import org.apache.samza.sql.operators.partition.PartitionSpec;
 import org.apache.samza.sql.operators.relation.Join;
 import org.apache.samza.sql.operators.relation.JoinSpec;
+import org.apache.samza.sql.operators.scan.ProjectableFilterableStreamScanOp;
+import org.apache.samza.sql.operators.scan.ProjectableFilterableStreamScanSpec;
 import org.apache.samza.sql.operators.stream.InsertStream;
 import org.apache.samza.sql.operators.stream.InsertStreamSpec;
 import org.apache.samza.sql.operators.window.BoundedTimeWindow;
@@ -56,8 +60,12 @@ public class SimpleOperatorFactoryImpl implements SqlOperatorFactory {
       return new BoundedTimeWindow((WindowSpec) spec);
     } else if (spec instanceof PartitionSpec) {
       return new PartitionOp((PartitionSpec) spec);
+    } else if (spec instanceof ProjectableFilterableStreamScanSpec) {
+      return new ProjectableFilterableStreamScanOp((ProjectableFilterableStreamScanSpec)spec);
+    } else if (spec instanceof InsertToStreamSpec) {
+      return new InsertToStreamOp((InsertToStreamSpec)spec);
     }
-    throw new UnsupportedOperationException("Unsupported operator specified" + spec.getClass().getCanonicalName());
+    throw new UnsupportedOperationException("Unsupported operator specified: " + spec.getClass().getCanonicalName());
   }
 
 }

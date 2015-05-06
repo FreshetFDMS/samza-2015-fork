@@ -18,16 +18,16 @@
  */
 package org.apache.samza.sql.operators.factory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.api.operators.spec.OperatorSpec;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 
 /**
  * An abstract class that encapsulate the basic information and methods that all specification of operators should implement.
- *
  */
 public abstract class SimpleOperatorSpec implements OperatorSpec {
   /**
@@ -46,14 +46,27 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
   private final List<EntityName> outputs = new ArrayList<EntityName>();
 
   /**
+   * type of the corresponding operator
+   */
+  private final Type type;
+
+  /**
    * Ctor of the <code>SimpleOperatorSpec</code> for simple <code>Operator</code>s w/ one input and one output
    *
-   * @param id Unique identifier of the <code>Operator</code> object
-   * @param input The only input entity
+   * @param id     Unique identifier of the <code>Operator</code> object
+   * @param input  The only input entity
    * @param output The only output entity
    */
   public SimpleOperatorSpec(String id, EntityName input, EntityName output) {
     this.id = id;
+    this.inputs.add(input);
+    this.outputs.add(output);
+    this.type = Type.TUPLE;
+  }
+
+  public SimpleOperatorSpec(String id, Type type, EntityName input, EntityName output) {
+    this.id = id;
+    this.type = type;
     this.inputs.add(input);
     this.outputs.add(output);
   }
@@ -61,7 +74,7 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
   /**
    * Ctor of <code>SimpleOperatorSpec</code> with general format: m inputs and n outputs
    *
-   * @param id Unique identifier of the <code>Operator</code> object
+   * @param id     Unique identifier of the <code>Operator</code> object
    * @param inputs The list of input entities
    * @param output The list of output entities
    */
@@ -69,6 +82,14 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
     this.id = id;
     this.inputs.addAll(inputs);
     this.outputs.add(output);
+    this.type = Type.TUPLE;
+  }
+
+  public SimpleOperatorSpec(String id, Type type, List<EntityName> inputs, EntityName output) {
+    this.id = id;
+    this.inputs.addAll(inputs);
+    this.outputs.add(output);
+    this.type = type;
   }
 
   @Override
@@ -102,5 +123,20 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
    */
   public EntityName getInputName() {
     return this.inputs.get(0);
+  }
+
+  @Override
+  public Type getType() {
+    return type;
+  }
+
+  protected static String genId(String operatorType) {
+    /**
+     * Note (Yi's comment from rb https://reviews.apache.org/r/33142/)
+     * ---------------------------------------------------------------
+     * For operators that keep states that should survive across restarts, UUID may not work. For example,
+     * getId() is used in WindowOperator to identify the state store name, which should be the same across re-starts.
+     */
+    return String.format("%s:%s", operatorType, UUID.randomUUID().toString());
   }
 }

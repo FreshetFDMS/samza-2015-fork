@@ -16,43 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql.calcite.test;
 
-package org.apache.samza.sql.api.data;
+import org.apache.calcite.avatica.util.Casing;
+import org.apache.calcite.avatica.util.Quoting;
+import org.apache.calcite.config.CalciteConnectionProperty;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
+public abstract class Utils {
+  public static Map<CalciteConnectionProperty, String> defaultConfiguration() {
+    Map<CalciteConnectionProperty, String> map = new HashMap<CalciteConnectionProperty, String>();
 
-public interface Schema {
+    map.put(CalciteConnectionProperty.CASE_SENSITIVE, "false");
+    map.put(CalciteConnectionProperty.QUOTED_CASING, Casing.UNCHANGED.name());
+    map.put(CalciteConnectionProperty.UNQUOTED_CASING, Casing.UNCHANGED.name());
+    map.put(CalciteConnectionProperty.QUOTING, Quoting.BACK_TICK.name());
 
-  enum Type {
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    STRING,
-    BYTES,
-    STRUCT,
-    ARRAY,
-    MAP
-  };
-
-  Type getType();
-
-  Schema getElementType();
-
-  Schema getValueType();
-
-  Map<String, Schema> getFields();
-
-  List<Field> getFieldList();
-
-  Schema getFieldType(String fldName);
-
-  Data read(Object object);
-
-  Data transform(Data inputData);
-
-  boolean equals(Schema other);
+    return map;
+  }
 }
