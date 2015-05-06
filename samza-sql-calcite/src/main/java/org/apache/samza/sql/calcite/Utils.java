@@ -33,9 +33,7 @@ import java.util.Map;
 
 public class Utils {
 
-  static {
-    URL.setURLStreamHandlerFactory(new org.apache.samza.sql.Utils.ResourceStreamHandlerFactory());
-  }
+  public static final String HACK_STREAM_HANDLER_SYSTEM_PROPERTY = "hackStreamHandlerProperty";
 
   /**
    * Read Calcite model from a URL to string.
@@ -44,7 +42,12 @@ public class Utils {
    * @return model as a string
    * @throws IOException
    */
-  public static String loadCalciteModelToString(String modelUrl) throws IOException {
+  public synchronized static String loadCalciteModelToString(String modelUrl) throws IOException {
+    if (System.getProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY) == null) {
+      URL.setURLStreamHandlerFactory(new org.apache.samza.sql.Utils.ResourceStreamHandlerFactory());
+      System.setProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY, "alreadyWorkedAroundTheEvilJDK");
+    }
+
     URL calciteModel = new URL(modelUrl);
     URLConnection connection = calciteModel.openConnection();
     BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));

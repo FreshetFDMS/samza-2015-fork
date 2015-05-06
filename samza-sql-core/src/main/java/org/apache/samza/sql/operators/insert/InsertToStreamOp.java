@@ -21,6 +21,7 @@ package org.apache.samza.sql.operators.insert;
 import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.TupleOperator;
+import org.apache.samza.sql.data.IntermediateMessageTuple;
 import org.apache.samza.sql.operators.factory.SimpleOperator;
 import org.apache.samza.system.OutgoingMessageEnvelope;
 import org.apache.samza.system.SystemStream;
@@ -53,7 +54,19 @@ public class InsertToStreamOp extends SimpleOperator implements TupleOperator {
   public void process(Tuple tuple, SqlMessageCollector collector) throws Exception {
     // TODO: Separate out insert into and insert stream operators
     if(!tuple.isDelete()) {
-      collector.send(new OutgoingMessageEnvelope(outputStream, tuple.getMessage()));
+
+      if(tuple instanceof IntermediateMessageTuple) {
+        IntermediateMessageTuple intermediateMessageTuple = (IntermediateMessageTuple)tuple;
+
+        if(intermediateMessageTuple.isProcessedMessage()){
+          collector.send(new OutgoingMessageEnvelope(outputStream,
+              spec.getOutputType().from(intermediateMessageTuple.getProcessedMessage())));
+        } else {
+          collector.send(new OutgoingMessageEnvelope(outputStream, tuple.getMessage()));
+        }
+      } else {
+        collector.send(new OutgoingMessageEnvelope(outputStream, tuple.getMessage()));
+      }
     }
   }
 

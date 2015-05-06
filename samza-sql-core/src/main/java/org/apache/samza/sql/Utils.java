@@ -28,9 +28,8 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
 public class Utils {
-  static {
-    URL.setURLStreamHandlerFactory(new ResourceStreamHandlerFactory());
-  }
+
+  public static final String HACK_STREAM_HANDLER_SYSTEM_PROPERTY = "hackStreamHandlerProperty";
 
   /**
    * Load Avro schema from classpath.
@@ -39,7 +38,13 @@ public class Utils {
    * @return avro schema corresponding to the schema url
    * @throws IOException
    */
-  public static Schema loadAvroSchemaFromClassPath(String schemaUrl) throws IOException {
+  public synchronized static Schema loadAvroSchemaFromClassPath(String schemaUrl) throws IOException {
+
+    if (System.getProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY) == null) {
+      URL.setURLStreamHandlerFactory(new ResourceStreamHandlerFactory());
+      System.setProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY, "alreadyWorkedAroundTheEvilJDK");
+    }
+
     URL avroSchema = new URL(schemaUrl);
     URLConnection connection = avroSchema.openConnection();
 

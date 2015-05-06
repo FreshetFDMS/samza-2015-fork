@@ -24,6 +24,7 @@ import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.expressions.Expression;
 import org.apache.samza.sql.api.operators.TupleOperator;
 import org.apache.samza.sql.data.DataUtils;
+import org.apache.samza.sql.data.IntermediateMessageTuple;
 import org.apache.samza.sql.operators.factory.SimpleOperator;
 import org.apache.samza.task.MessageCollector;
 import org.apache.samza.task.TaskContext;
@@ -55,7 +56,7 @@ public class ProjectOp extends SimpleOperator implements TupleOperator {
     Expression project = spec.getProjectExpression();
     project.execute(inputValues, results);
 
-    // TODO: Finish the project operator.
+    collector.send(IntermediateMessageTuple.fromProcessedMessage(results, false, spec.getOutputName(), tuple.getKey()));
   }
 
   @Override

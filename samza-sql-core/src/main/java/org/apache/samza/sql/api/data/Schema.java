@@ -54,5 +54,7 @@ public interface Schema {
 
   Data transform(Data inputData);
 
+  Data from(Object[] values);
+
   boolean equals(Schema other);
 }

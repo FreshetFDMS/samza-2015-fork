@@ -20,7 +20,7 @@ package org.apache.samza.sql.calcite.test;
 
 
 public class Constants {
-  public static final String STREAM_SCHEMA = "     {\n"
+  public static final String STREAM_SCHEMA = "{\n"
       + "       name: 'STREAMS',\n"
       + "       tables: [ {\n"
       + "         type: 'custom',\n"
@@ -29,15 +29,24 @@ public class Constants {
       + "           stream: true\n"
       + "         },\n"
       + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
-      + "       }, {"
+      + "       },\n"
+      + "       {\n"
       + "         type: 'custom',\n"
       + "         name: 'FILTEREDORDERS',\n"
       + "         stream: {\n"
       + "            stream: true\n"
       + "         },\n"
       + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
+      + "       },"
+      + "       {\n"
+      + "         type: 'custom',\n"
+      + "         name: 'FILTEREDPROJECTEDORDERS',\n"
+      + "         stream: {\n"
+      + "           stream: true\n"
+      + "         },\n"
+      + "         factory: '" + ProjectedOrdersStreamTableFactory.class.getName() + "'\n"
       + "       }]\n"
-      + "     }\n";
+      + " }\n";
 
   public static final String STREAM_MODEL = "{\n"
       + "  version: '1.0',\n"
@@ -55,11 +64,12 @@ public class Constants {
   public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE =
       "select stream * from orders where units > 5";
 
-  public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_RENAME =
-      "select stream productId, (units + 1) as quantity from orders where units > 5";
+  public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_PROJECT =
+      "insert into filteredprojectedorders select stream productId, (units + 1) as quantity from orders where units > 5";
 
   public static final String INSERT_INTO =
       "insert into filteredorders select stream * from orders where units > 5";
+
 
   public static final String EXPLICIT_WINDOW_DEFS = "WITH HourlyTotals (rowtime, productId, c, su) AS (\n" +
       "  SELECT FLOOR(rowtime TO HOUR),\n" +

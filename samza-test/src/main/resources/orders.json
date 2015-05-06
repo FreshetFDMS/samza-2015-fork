@@ -38,6 +38,14 @@
             stream: true
           },
           factory: 'org.apache.samza.test.integration.sql.OrdersStreamFactory'
+        },
+        {
+          type: 'custom',
+          name: 'FILTEREDPROJECTEDORDERS',
+          stream: {
+            stream: true
+          },
+          factory: 'org.apache.samza.test.integration.sql.ProjectedOrdersStreamFactory'
         }
       ]
     }

@@ -69,7 +69,6 @@ public class OrderStreamTableFactory implements TableFactory<Table> {
 
       @Override
       public RelNode toRel(RelOptTable.ToRelContext context, RelOptTable relOptTable) {
-        final int fieldCount = relOptTable.getRowType().getFieldCount();
         return new StreamScan(context.getCluster(), relOptTable);
       }
 

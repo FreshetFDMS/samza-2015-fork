@@ -27,6 +27,8 @@ import org.apache.samza.sql.operators.insert.InsertToStreamOp;
 import org.apache.samza.sql.operators.insert.InsertToStreamSpec;
 import org.apache.samza.sql.operators.partition.PartitionOp;
 import org.apache.samza.sql.operators.partition.PartitionSpec;
+import org.apache.samza.sql.operators.project.ProjectOp;
+import org.apache.samza.sql.operators.project.ProjectSpec;
 import org.apache.samza.sql.operators.relation.Join;
 import org.apache.samza.sql.operators.relation.JoinSpec;
 import org.apache.samza.sql.operators.scan.ProjectableFilterableStreamScanOp;
@@ -64,6 +66,8 @@ public class SimpleOperatorFactoryImpl implements SqlOperatorFactory {
       return new ProjectableFilterableStreamScanOp((ProjectableFilterableStreamScanSpec)spec);
     } else if (spec instanceof InsertToStreamSpec) {
       return new InsertToStreamOp((InsertToStreamSpec)spec);
+    } else if (spec instanceof ProjectSpec) {
+      return new ProjectOp((ProjectSpec)spec);
     }
     throw new UnsupportedOperationException("Unsupported operator specified: " + spec.getClass().getCanonicalName());
   }

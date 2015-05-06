@@ -30,6 +30,7 @@ import org.apache.samza.sql.api.router.OperatorRouter;
 import org.apache.samza.sql.calcite.test.Constants;
 import org.apache.samza.sql.calcite.test.OrderStreamTableFactory;
 import org.apache.samza.sql.calcite.test.Utils;
+import org.apache.samza.sql.operators.project.ProjectOp;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -38,38 +39,10 @@ import java.util.List;
 
 public class TestExecutionPlanner {
 
-  public static final String model = "{\n" +
-      "  version: '1.0',\n" +
-      "  defaultSchema: 'KAFKA',\n" +
-      "  schemas: [\n" +
-      "    {\n" +
-      "      name: 'KAFKA',\n" +
-      "      tables: [\n" +
-      "        {\n" +
-      "          type: 'custom',\n" +
-      "          name: 'ORDERS',\n" +
-      "          stream: {\n" +
-      "            stream: true\n" +
-      "          },\n" +
-      "          factory: '" + OrderStreamTableFactory.class.getName() + "'\n" +
-      "        },\n" +
-      "        {\n" +
-      "          type: 'custom',\n" +
-      "          name: 'FILTEREDORDERS',\n" +
-      "          stream: {\n" +
-      "            stream: true\n" +
-      "          },\n" +
-      "          factory: '" + OrderStreamTableFactory.class.getName() + "'\n" +
-      "        }\n" +
-      "      ]\n" +
-      "    }\n" +
-      "  ]\n" +
-      "}";
-
   @Test
   public void testBasicExecutionPlanning() throws SQLException, IOException {
     SamzaCalciteConnection connection =
-        new SamzaCalciteConnection(model);
+        new SamzaCalciteConnection(Constants.STREAM_MODEL);
     CalcitePrepare.Context context = Schemas.makeContext(connection,
         connection.getCalciteRootSchema(),
         ImmutableList.of(connection.getSchema()),
@@ -83,9 +56,40 @@ public class TestExecutionPlanner {
 
     Assert.assertNotNull(router);
 
-    List<TupleOperator> tupleOperators = router.getTupleOperators(EntityName.getStreamName("kafka:orders"));
+    List<TupleOperator> tupleOperators = router.getTupleOperators(EntityName.getStreamName("streams:orders"));
 
     Assert.assertNotNull(tupleOperators);
     Assert.assertEquals(1, tupleOperators.size());
+  }
+
+  @Test
+  public void testExecutionPlanWithProject() throws SQLException, IOException {
+    SamzaCalciteConnection connection =
+        new SamzaCalciteConnection(Constants.STREAM_MODEL);
+    CalcitePrepare.Context context = Schemas.makeContext(connection,
+        connection.getCalciteRootSchema(),
+        ImmutableList.of(connection.getSchema()),
+        ImmutableMap.copyOf(Utils.defaultConfiguration()));
+
+    QueryPlanner planner = new QueryPlanner();
+    RelNode relNode = planner.getPlan(Constants.SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_PROJECT, context, true);
+
+    ExecutionPlanner executionPlanner = new ExecutionPlanner(relNode);
+    OperatorRouter router = executionPlanner.getExecutionPlan();
+
+    Assert.assertNotNull(router);
+
+    List<TupleOperator> tupleOperators = router.getTupleOperators(EntityName.getStreamName("streams:orders"));
+
+    Assert.assertNotNull(tupleOperators);
+    Assert.assertEquals(1, tupleOperators.size());
+
+    EntityName scanOutputStream = tupleOperators.get(0).getSpec().getOutputNames().get(0);
+
+    tupleOperators = router.getTupleOperators(scanOutputStream);
+
+    Assert.assertNotNull(tupleOperators);
+    Assert.assertEquals(1, tupleOperators.size());
+    Assert.assertTrue(tupleOperators.get(0) instanceof ProjectOp);
   }
 }

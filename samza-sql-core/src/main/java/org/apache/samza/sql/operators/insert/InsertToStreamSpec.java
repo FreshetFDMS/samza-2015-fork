@@ -19,13 +19,16 @@
 package org.apache.samza.sql.operators.insert;
 
 import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.data.Schema;
 import org.apache.samza.sql.api.operators.spec.OperatorSpec;
 import org.apache.samza.sql.operators.factory.SimpleOperatorSpec;
+import org.apache.samza.sql.operators.factory.TypeAwareOperatorSpec;
 
-public class InsertToStreamSpec extends SimpleOperatorSpec implements OperatorSpec {
+public class InsertToStreamSpec extends TypeAwareOperatorSpec implements OperatorSpec {
   public static final String OP_TYPE = "InsertToStream";
 
-  public InsertToStreamSpec(EntityName input, EntityName output) {
-    super(genId(OP_TYPE), input, output);
+  public InsertToStreamSpec(EntityName input, EntityName output, Schema outputType) {
+    // InsertToStream doesn't do any transformations, so input type is same as output type.
+    super(genId(OP_TYPE), input, output, outputType, outputType);
   }
 }

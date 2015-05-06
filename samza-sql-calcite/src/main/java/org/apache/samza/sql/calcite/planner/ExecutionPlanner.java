@@ -43,10 +43,14 @@ import org.apache.samza.sql.api.operators.TupleOperator;
 import org.apache.samza.sql.api.operators.spec.OperatorSpec;
 import org.apache.samza.sql.api.router.OperatorRouter;
 import org.apache.samza.sql.api.expressions.Expression;
+import org.apache.samza.sql.calcite.rel.StreamScan;
+import org.apache.samza.sql.calcite.schema.AvroSchemaUtils;
 import org.apache.samza.sql.calcite.schema.RelDataTypeUtils;
 import org.apache.samza.sql.calcite.schema.Stream;
+import org.apache.samza.sql.data.avro.AvroSchema;
 import org.apache.samza.sql.operators.factory.SimpleOperatorFactoryImpl;
 import org.apache.samza.sql.operators.insert.InsertToStreamSpec;
+import org.apache.samza.sql.operators.project.ProjectSpec;
 import org.apache.samza.sql.operators.scan.ProjectableFilterableStreamScanSpec;
 import org.apache.samza.sql.operators.scan.StreamScanSpec;
 import org.apache.samza.sql.calcite.rel.ProjectableFilterableStreamScan;
@@ -212,17 +216,50 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
               return input.toLowerCase();
             }
           })));
-      this.spec = new InsertToStreamSpec(null, output);
+      RelOptTable outputStreamTable = modify.getTable();
+
+      Stream outputStream = outputStreamTable.unwrap(Stream.class);
+
+      if(outputStream == null){
+        throw new SamzaException("Unsupported output.");
+      }
+
+      /**
+       * Here we should get the Schema of the stream/table we are going to write the output to.
+       */
+      Schema outputStreamType = outputStream.getType(relDataTypeFactory);
+      this.spec = new InsertToStreamSpec(null, output, outputStreamType);
     } else {
       throw new UnsupportedOperationException(String.format("Stream/table modification of type %s is not supported.", modify.getOperation()));
     }
   }
 
   public void visit(Project project) {
-//    EntityName output = genOutputStreamName(OP_PROJECT);
-//    Expression projectExpr = rexToJavaCompiler.compile(project.getInputs(), project.getProjects());
-//    this.spec = new ProjectSpec(null, output, projectExpr, project.getInput().getRowType(), project.getRowType());
-    throw new UnsupportedOperationException("Project operator is not supported yet.");
+    RelNode input = project.getInput();
+    if(input instanceof StreamScan) {
+      EntityName output = genOutputStreamName(OP_PROJECT);
+      Expression projectExpr = rexToJavaCompiler.compile(project.getInputs(), project.getProjects());
+      Stream inputStream = ((StreamScan)input).getTable().unwrap(Stream.class);
+
+      if(inputStream == null){
+        throw new SamzaException("Input's table should be a Stream.");
+      }
+
+      Schema inputStreamType = inputStream.getType(relDataTypeFactory);
+
+      /**
+       * Note (Milinda on 04/23/2015):
+       * Here we transform type (RelDataType) of project operator to Samza Schema.
+       * Because we just use this schema as a metadata to convert incoming message to object array (Object[]), I think
+       * type of Schema implementation doesn't matter much. So I am using AvroSchema implementation. But its better
+       * if we can implement a dummy Samza Schema to just handle the type information for intermediate operators.
+       */
+      Schema outputSchema = AvroSchema.getSchema(AvroSchemaUtils.relDataTypeToAvroSchema(project.getRowType()));
+
+      this.spec = new ProjectSpec(null, output, projectExpr, inputStreamType, outputSchema);
+    } else {
+      throw new IllegalArgumentException("Unsupported Project input. Only inputs of type StreamScan is supported.");
+    }
   }
 
   public void visit(RelNode relNode) {
