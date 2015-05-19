@@ -46,5 +46,5 @@ def naarad_logs():
     'yarn_nm_instance_0': [],
   }
 
-def naarad_config(config, test_name=None):
+def naarad_config(test_name=None):
   return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'naarad.cfg')

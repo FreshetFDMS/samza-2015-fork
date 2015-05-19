@@ -16,43 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql.operators.insert;
 
-package org.apache.samza.sql.api.data;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.operators.factory.SimpleOperatorSpec;
 
-import java.util.List;
-import java.util.Map;
+public class InsertToStreamSpec extends SimpleOperatorSpec {
 
-
-public interface Schema {
-
-  enum Type {
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    STRING,
-    BYTES,
-    STRUCT,
-    ARRAY,
-    MAP
-  };
-
-  Type getType();
-
-  Schema getElementType();
-
-  Schema getValueType();
-
-  Map<String, Schema> getFields();
-
-  List<Field> getFieldList();
-
-  Schema getFieldType(String fldName);
-
-  Data read(Object object);
-
-  Data transform(Data inputData);
-
-  boolean equals(Schema other);
+  public InsertToStreamSpec(String id, EntityName input, EntityName output) {
+    super(id, input, output);
+  }
 }

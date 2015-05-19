@@ -28,6 +28,7 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.samza.config.Config;
 import org.apache.samza.config.MapConfig;
 import org.apache.samza.serializers.Serde;
+import org.apache.samza.sql.Utils;
 import org.apache.samza.sql.data.avro.AvroData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,32 +38,25 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SqlAvroSerdeTest {
-  public static final String ORDER_SCHEMA = "{\"namespace\": \"org.apache.samza.sql\",\n"+
-      " \"type\": \"record\",\n"+
-      " \"name\": \"Order\",\n"+
-      " \"fields\": [\n"+
-      "     {\"name\": \"id\", \"type\": \"int\"},\n"+
-      "     {\"name\": \"product\",  \"type\": \"string\"},\n"+
-      "     {\"name\": \"quantity\", \"type\": \"int\"}\n"+
-      " ]\n"+
-      "}";
+public class TestSqlAvroSerde {
 
-  public static Schema orderSchema = new Schema.Parser().parse(ORDER_SCHEMA);
+  public static final String ORDERS_AVRO_SCHEMA_URL = "resource:orders.avsc";
   private static Serde serde = new SqlAvroSerdeFactory().getSerde("sqlAvro", sqlAvroSerdeTestConfig());
 
   @Test
   public void testSqlAvroSerdeDeserialization() throws IOException {
+    Schema orderSchema = Utils.loadAvroSchemaFromClassPath(ORDERS_AVRO_SCHEMA_URL);
     AvroData decodedDatum = (AvroData)serde.fromBytes(encodeMessage(sampleOrderRecord(), orderSchema));
 
     Assert.assertTrue(decodedDatum.schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRUCT);
     Assert.assertTrue(decodedDatum.getFieldData("id").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
-    Assert.assertTrue(decodedDatum.getFieldData("quantity").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
-    Assert.assertTrue(decodedDatum.getFieldData("product").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRING);
+    Assert.assertTrue(decodedDatum.getFieldData("units").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
+    Assert.assertTrue(decodedDatum.getFieldData("productId").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRING);
   }
 
   @Test
   public void testSqlAvroSerialization() throws IOException {
+    Schema orderSchema = Utils.loadAvroSchemaFromClassPath(ORDERS_AVRO_SCHEMA_URL);
     AvroData decodedDatumOriginal = (AvroData)serde.fromBytes(encodeMessage(sampleOrderRecord(), orderSchema));
     byte[] encodedDatum = serde.toBytes(decodedDatumOriginal);
 
@@ -70,13 +64,13 @@ public class SqlAvroSerdeTest {
 
     Assert.assertTrue(decodedDatum.schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRUCT);
     Assert.assertTrue(decodedDatum.getFieldData("id").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
-    Assert.assertTrue(decodedDatum.getFieldData("quantity").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
-    Assert.assertTrue(decodedDatum.getFieldData("product").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRING);
+    Assert.assertTrue(decodedDatum.getFieldData("units").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.INTEGER);
+    Assert.assertTrue(decodedDatum.getFieldData("productId").schema().getType() == org.apache.samza.sql.api.data.Schema.Type.STRING);
   }
 
   private static Config sqlAvroSerdeTestConfig(){
     Map<String, String> config = new HashMap<String, String>();
-    config.put("serializers.sqlAvro.schema", ORDER_SCHEMA);
+    config.put("serializers.sqlAvro.schema", ORDERS_AVRO_SCHEMA_URL);
 
     return new MapConfig(config);
   }
@@ -91,11 +85,12 @@ public class SqlAvroSerdeTest {
     return  output.toByteArray();
   }
 
-  private static GenericRecord sampleOrderRecord(){
+  private static GenericRecord sampleOrderRecord() throws IOException {
+    Schema orderSchema = Utils.loadAvroSchemaFromClassPath(ORDERS_AVRO_SCHEMA_URL);
     GenericData.Record datum = new GenericData.Record(orderSchema);
     datum.put("id", 1);
-    datum.put("product", "paint");
-    datum.put("quantity", 3);
+    datum.put("productId", "paint");
+    datum.put("units", 3);
 
     return datum;
   }

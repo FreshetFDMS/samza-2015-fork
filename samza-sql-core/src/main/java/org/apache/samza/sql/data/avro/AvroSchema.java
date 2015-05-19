@@ -19,7 +19,9 @@
 
 package org.apache.samza.sql.data.avro;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.avro.Schema.Field;
@@ -140,9 +142,42 @@ public class AvroSchema implements Schema {
             }
           };
 
+          private final List<org.apache.samza.sql.api.data.Field> fields =
+              new ArrayList<org.apache.samza.sql.api.data.Field>() {
+                {
+                  for(final Field field : schema.getFields()){
+                    add(new org.apache.samza.sql.api.data.Field() {
+                      private final String name = field.name();
+                      private final int index = field.pos();
+                      private final Schema type = new AvroSchema(field.schema());
+
+                      @Override
+                      public String getName() {
+                        return name;
+                      }
+
+                      @Override
+                      public int getIndex() {
+                        return index;
+                      }
+
+                      @Override
+                      public Schema getType() {
+                        return type;
+                      }
+                    });
+                  }
+                }
+          };
+
           @Override
           public Map<String, Schema> getFields() {
             return this.fldSchemas;
+          }
+
+          @Override
+          public List<org.apache.samza.sql.api.data.Field> getFieldList() {
+            return fields;
           }
 
           @Override
@@ -234,6 +269,11 @@ public class AvroSchema implements Schema {
   @Override
   public Map<String, Schema> getFields() {
     throw new UnsupportedOperationException("Can't get field types with unknown schema type:" + this.type);
+  }
+
+  @Override
+  public List<org.apache.samza.sql.api.data.Field> getFieldList() {
+    throw new UnsupportedOperationException("Can't get field list with unknown schema type:" + this.type);
   }
 
   @Override

@@ -16,43 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql.calcite.schema;
 
-package org.apache.samza.sql.api.data;
+import org.apache.calcite.linq4j.function.Function1;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.samza.sql.api.data.Schema;
 
-import java.util.List;
-import java.util.Map;
-
-
-public interface Schema {
-
-  enum Type {
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    STRING,
-    BYTES,
-    STRUCT,
-    ARRAY,
-    MAP
-  };
-
-  Type getType();
-
-  Schema getElementType();
-
-  Schema getValueType();
-
-  Map<String, Schema> getFields();
-
-  List<Field> getFieldList();
-
-  Schema getFieldType(String fldName);
-
-  Data read(Object object);
-
-  Data transform(Data inputData);
-
-  boolean equals(Schema other);
+/**
+ * Can be converted into a {@link Schema} given a {@link org.apache.calcite.rel.type.RelDataTypeFactory}
+ */
+public interface SamzaStreamType extends Function1<RelDataTypeFactory, Schema> {
 }

@@ -20,8 +20,10 @@
 package org.apache.samza.sql.data.string;
 
 import org.apache.samza.sql.api.data.Data;
+import org.apache.samza.sql.api.data.Field;
 import org.apache.samza.sql.api.data.Schema;
 
+import java.util.List;
 import java.util.Map;
 
 public class StringSchema implements Schema {
@@ -45,6 +47,11 @@ public class StringSchema implements Schema {
     @Override
     public Map<String, Schema> getFields() {
         throw new UnsupportedOperationException("Can't get field types with unknown schema type:" + this.type);
+    }
+
+    @Override
+    public List<Field> getFieldList() {
+        throw new UnsupportedOperationException("Can't get field list with unknown schema type:" + this.type);
     }
 
     @Override

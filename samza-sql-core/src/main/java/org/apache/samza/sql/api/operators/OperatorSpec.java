@@ -55,4 +55,11 @@ public interface OperatorSpec {
    *
    */
   List<EntityName> getOutputNames();
+
+  /**
+   * Setter method to set the entity names of input variables.
+   *
+   * @param inputNames entity names of input variables
+   */
+  void setInputNames(List<EntityName> inputNames);
 }

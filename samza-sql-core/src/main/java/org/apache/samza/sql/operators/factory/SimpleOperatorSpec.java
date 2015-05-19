@@ -103,4 +103,18 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
   public EntityName getInputName() {
     return this.inputs.get(0);
   }
+
+  @Override
+  public void setInputNames(List<EntityName> inputNames) {
+    this.inputs.addAll(inputNames);
+  }
+
+  /**
+   * Method to set an input entity
+   *
+   * @param inputName The input entity name
+   */
+  public void setInputName(EntityName inputName){
+    this.inputs.add(inputName);
+  }
 }
