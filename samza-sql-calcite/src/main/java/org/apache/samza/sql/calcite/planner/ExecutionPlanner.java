@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
@@ -112,8 +113,7 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
     SimpleOperator operator = operatorFactory.getOperator(spec);
 
     if (inputs != null) {
-      for (int i = 0; i < inputs.size(); i++) {
-        Object inputSpec = inputs.get(i);
+      for (Object inputSpec : inputs) {
         if (inputSpec instanceof StreamScanSpec) {
           /* StreamScan is special because we can ignore it and directly wire the input stream of scan
            * to the stream scan's parent (operator corresponding to current node).
@@ -186,7 +186,7 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
 
     EntityName output = genOutputStreamName(OP_PROJECTABLE_FILTERABLE_STREAM_SCAN);
     Expression filterExpr = rexToJavaCompiler.compile(Lists.newArrayList((RelNode) scan), scan.getFilters());
-    this.spec = new FilterableStreamScanSpec("",input, output, streamType, streamType, filterExpr);
+    this.spec = new FilterableStreamScanSpec(genOperatorId("filterablescan"), input, output, streamType, streamType, filterExpr);
   }
 
   public void visit(LogicalTableModify modify) {
@@ -198,7 +198,7 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
               return input.toLowerCase();
             }
           })));
-      this.spec = new InsertToStreamSpec("",null, output);
+      this.spec = new InsertToStreamSpec(genOperatorId("insert"), null, output);
     } else {
       throw new UnsupportedOperationException(String.format("Stream/table modification of type %s is not supported.", modify.getOperation()));
     }
@@ -217,5 +217,10 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
 
   private EntityName genOutputStreamName(String operator) {
     return EntityName.getStreamName("kafka:".concat(operator).concat("output").concat(Integer.toString(outputCount.getAndIncrement())));
+  }
+
+  private String genOperatorId(String operator) {
+    // TODO: Implement a proper operator id generator.
+    return operator + "-" + UUID.randomUUID();
   }
 }
