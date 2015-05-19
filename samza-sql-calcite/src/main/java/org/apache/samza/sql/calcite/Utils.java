@@ -33,10 +33,6 @@ import java.util.Map;
 
 public class Utils {
 
-  static {
-    URL.setURLStreamHandlerFactory(new org.apache.samza.sql.Utils.ResourceStreamHandlerFactory());
-  }
-
   /**
    * Read Calcite model from a URL to string.
    *
@@ -45,6 +41,13 @@ public class Utils {
    * @throws IOException
    */
   public static String loadCalciteModelToString(String modelUrl) throws IOException {
+
+    // TODO: remove this once we have a proper way of managing metadata related schemas and calcite models
+    if (System.getProperty(org.apache.samza.sql.Utils.HACK_STREAM_HANDLER_SYSTEM_PROPERTY) == null) {
+      URL.setURLStreamHandlerFactory(new org.apache.samza.sql.Utils.ResourceStreamHandlerFactory());
+      System.setProperty(org.apache.samza.sql.Utils.HACK_STREAM_HANDLER_SYSTEM_PROPERTY, "alreadyWorkedAroundTheEvilJDK");
+    }
+
     URL calciteModel = new URL(modelUrl);
     URLConnection connection = calciteModel.openConnection();
     BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));

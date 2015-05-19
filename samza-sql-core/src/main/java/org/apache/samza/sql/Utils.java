@@ -28,9 +28,8 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
 public class Utils {
-  static {
-    URL.setURLStreamHandlerFactory(new ResourceStreamHandlerFactory());
-  }
+
+  public static final String HACK_STREAM_HANDLER_SYSTEM_PROPERTY = "hackStreamHandlerProperty";
 
   /**
    * Load Avro schema from classpath.
@@ -40,6 +39,13 @@ public class Utils {
    * @throws IOException
    */
   public static Schema loadAvroSchemaFromClassPath(String schemaUrl) throws IOException {
+
+    // TODO: remove this once we have a proper way of managing metadata related schemas and calcite models
+    if (System.getProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY) == null) {
+      URL.setURLStreamHandlerFactory(new org.apache.samza.sql.Utils.ResourceStreamHandlerFactory());
+      System.setProperty(HACK_STREAM_HANDLER_SYSTEM_PROPERTY, "alreadyWorkedAroundTheEvilJDK");
+    }
+
     URL avroSchema = new URL(schemaUrl);
     URLConnection connection = avroSchema.openConnection();
 

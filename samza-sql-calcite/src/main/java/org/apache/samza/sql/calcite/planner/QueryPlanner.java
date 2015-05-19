@@ -220,9 +220,9 @@ public class QueryPlanner {
   }
 
   private RelNode optimize(RelNode rootRel) {
+    // TODO: Add ProjectableStreamScanRule back after fixing the apply logic
     final HepProgram hepProgram = new HepProgramBuilder()
         .addRuleInstance(FilterableStreamScanRule.INSTANCE)
-        .addRuleInstance(ProjectableStreamScanRule.INSTANCE)
         .addRuleInstance(RemoveIdentityProjectRule.INSTANCE).build();
     final HepPlanner planner = new HepPlanner(hepProgram);
     planner.setRoot(rootRel);
