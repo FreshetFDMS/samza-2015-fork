@@ -35,7 +35,7 @@ public class FilterableStreamScanSpec extends TypeAwareOperatorSpec implements O
 
 
   public FilterableStreamScanSpec(String id, EntityName input, EntityName output, Schema inputType, Schema outputType, Expression filterExpression) {
-    super(id, input, output, Arrays.asList(inputType), outputType);
+    super(id, input, output, inputType, outputType);
     this.filterExpression = filterExpression;
   }
 

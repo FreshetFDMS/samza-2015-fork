@@ -60,7 +60,7 @@ public class AvroSchemaUtils {
     for (Schema.Field field : recordSchema.getFields()) {
       Schema fieldSchema = field.schema();
       if (fieldSchema.getType() == Schema.Type.NULL) {
-        continue;
+        continue; // From parquet-avro: Avro nulls are not encoded, unless they are null unions
       }
 
       convertField(builder, relDataTypeFactory, field.name(), fieldSchema);
@@ -106,7 +106,8 @@ public class AvroSchemaUtils {
       return relDataTypeFactory.createMapType(relDataTypeFactory.createSqlType(SqlTypeName.VARCHAR),
           convertFieldType(elementType.getValueType(), relDataTypeFactory));
     } else if (type == Schema.Type.FIXED) {
-      return relDataTypeFactory.createSqlType(SqlTypeName.VARBINARY, elementType.getFixedSize());
+      // Remove the support for Fixed types as per the comments in https://reviews.apache.org/r/33280/
+      throw new IllegalArgumentException("Unsupported type: " + type);
     } else if (type == Schema.Type.UNION) {
       List<Schema> types = elementType.getTypes();
       List<Schema> nonNullTypes = new ArrayList<Schema>();
@@ -126,8 +127,8 @@ public class AvroSchemaUtils {
         return relDataTypeFactory.createTypeWithNullability(convertFieldType(nonNullTypes.get(0), relDataTypeFactory), foundNull);
       }
     } else if (type == Schema.Type.ENUM) {
-      // TODO: May be there is a better way to handle enums
-      relDataTypeFactory.createSqlType(SqlTypeName.VARCHAR);
+      // Remove the support for enums as per the comments in https://reviews.apache.org/r/33280/
+      throw new IllegalArgumentException("Unsupported type " + type);
     }
 
     return relDataTypeFactory.createSqlType(SqlTypeName.ANY);

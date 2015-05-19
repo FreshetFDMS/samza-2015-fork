@@ -46,7 +46,7 @@ public class DataUtils {
           String.format("Unsupported type %s. Only data of type STRUCT is supported at this sytage.", type.getType()));
     }
 
-    List<Field> fields = type.getFieldList();
+    List<Field> fields = type.getFields();
     Object[] indexedFieldValues = new Object[fields.size()];
 
     for(Field f : fields){
@@ -54,25 +54,6 @@ public class DataUtils {
     }
 
     return indexedFieldValues;
-  }
-
-  /**
-   * Convert Samza {@link org.apache.samza.sql.api.data.Data} object to array for passing into a row expression.
-   *
-   * <p>This assumes that your {@link org.apache.samza.sql.api.data.Data} objects are of type Struct.</p>
-   *
-   * @param data                 Samza data object
-   * @param columnCount          Number of columns/fields in the row represented by the above data object
-   * @param indexToColumnNameMap Column index to struct field name mapping
-   * @return                     array of struct field values
-   */
-  public static Object[] samzaStructDataToObjectArray(Data data, int columnCount, Map<Integer, String> indexToColumnNameMap){
-    Object[] values = new Object[columnCount];
-
-    for(int i = 0; i < columnCount; i++){
-      values[i] = data.getFieldData(indexToColumnNameMap.get(i)).value();
-    }
-    return values;
   }
 
   /**

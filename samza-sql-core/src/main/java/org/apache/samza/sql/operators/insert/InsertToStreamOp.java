@@ -43,9 +43,18 @@ public class InsertToStreamOp extends SimpleOperatorImpl {
   public InsertToStreamOp(InsertToStreamSpec spec) {
     super(spec);
     this.spec = spec;
-    assert spec.getOutputName().isStream();
+
+    if(!spec.getOutputName().isStream()){
+      throw new IllegalArgumentException("Output entity " + spec.getOutputName() + " should be a stream.");
+    }
+
     StringTokenizer tokenizer = new StringTokenizer(spec.getOutputName().getName(), ":");
-    assert tokenizer.countTokens() == 2;
+
+    if(tokenizer.countTokens() != 2){
+      throw new IllegalArgumentException("Output stream name should be in the form <system>:<stream>, " +
+          "but the given name is " + spec.getOutputName().getName());
+    }
+
     outputStream = new SystemStream(tokenizer.nextToken(), tokenizer.nextToken());
   }
 

@@ -44,9 +44,7 @@ public interface Schema {
 
   Schema getValueType();
 
-  Map<String, Schema> getFields();
-
-  List<Field> getFieldList();
+  List<Field> getFields();
 
   Schema getFieldType(String fldName);
 

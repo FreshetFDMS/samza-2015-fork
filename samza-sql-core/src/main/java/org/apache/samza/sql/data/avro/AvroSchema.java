@@ -19,14 +19,14 @@
 
 package org.apache.samza.sql.data.avro;
 
+import org.apache.avro.Schema.Field;
+import org.apache.samza.sql.api.data.Data;
+import org.apache.samza.sql.api.data.Schema;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.avro.Schema.Field;
-import org.apache.samza.sql.api.data.Data;
-import org.apache.samza.sql.api.data.Schema;
 
 
 public class AvroSchema implements Schema {
@@ -40,54 +40,56 @@ public class AvroSchema implements Schema {
   static {
     primSchemas.put(org.apache.avro.Schema.Type.INT,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.INT)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getInt(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getInt(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.LONG,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.LONG)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getLong(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getLong(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.FLOAT,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.FLOAT)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getFloat(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getFloat(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.DOUBLE,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.DOUBLE)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getDouble(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getDouble(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.BOOLEAN,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BOOLEAN)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getBoolean(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getBoolean(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.STRING,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.STRING)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getString(this, datum);
-      }
-    });
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getString(this, datum);
+          }
+        });
     primSchemas.put(org.apache.avro.Schema.Type.BYTES,
         new AvroSchema(org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BYTES)) {
-      @Override
-      public Data read(Object datum) {
-        return AvroData.getBytes(this, datum);
-      }
-    });
-  };
+          @Override
+          public Data read(Object datum) {
+            return AvroData.getBytes(this, datum);
+          }
+        });
+  }
+
+  ;
 
   public static AvroSchema getSchema(final org.apache.avro.Schema schema) {
     Schema.Type type = mapType(schema.getType());
@@ -145,11 +147,11 @@ public class AvroSchema implements Schema {
           private final List<org.apache.samza.sql.api.data.Field> fields =
               new ArrayList<org.apache.samza.sql.api.data.Field>() {
                 {
-                  for(final Field field : schema.getFields()){
+                  for (final Field field : schema.getFields()) {
                     add(new org.apache.samza.sql.api.data.Field() {
                       private final String name = field.name();
                       private final int index = field.pos();
-                      private final Schema type = new AvroSchema(field.schema());
+                      private final Schema type = getSchema(field.schema());
 
                       @Override
                       public String getName() {
@@ -168,16 +170,11 @@ public class AvroSchema implements Schema {
                     });
                   }
                 }
-          };
+              };
 
           @Override
-          public Map<String, Schema> getFields() {
-            return this.fldSchemas;
-          }
-
-          @Override
-          public List<org.apache.samza.sql.api.data.Field> getFieldList() {
-            return fields;
+          public List<org.apache.samza.sql.api.data.Field> getFields() {
+            return this.fields;
           }
 
           @Override
@@ -267,13 +264,8 @@ public class AvroSchema implements Schema {
   }
 
   @Override
-  public Map<String, Schema> getFields() {
-    throw new UnsupportedOperationException("Can't get field types with unknown schema type:" + this.type);
-  }
-
-  @Override
-  public List<org.apache.samza.sql.api.data.Field> getFieldList() {
-    throw new UnsupportedOperationException("Can't get field list with unknown schema type:" + this.type);
+  public List<org.apache.samza.sql.api.data.Field> getFields() {
+    throw new UnsupportedOperationException("Can't get fields with unknown schema type:" + this.type);
   }
 
   @Override
@@ -322,8 +314,8 @@ public class AvroSchema implements Schema {
       case STRUCT:
         // check if the fields schemas in this equals the other
         // NOTE: this equals check is in consistent with the "projection to subset" concept implemented in transform()
-        for (String fieldName : this.getFields().keySet()) {
-          if (!this.getFieldType(fieldName).equals(other.getFieldType(fieldName))) {
+        for (org.apache.samza.sql.api.data.Field field : this.getFields()) {
+          if (!this.getFieldType(field.getName()).equals(other.getFieldType(field.getName()))) {
             return false;
           }
         }

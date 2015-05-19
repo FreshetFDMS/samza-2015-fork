@@ -45,13 +45,8 @@ public class StringSchema implements Schema {
     }
 
     @Override
-    public Map<String, Schema> getFields() {
-        throw new UnsupportedOperationException("Can't get field types with unknown schema type:" + this.type);
-    }
-
-    @Override
-    public List<Field> getFieldList() {
-        throw new UnsupportedOperationException("Can't get field list with unknown schema type:" + this.type);
+    public List<Field> getFields() {
+        throw new UnsupportedOperationException("Can't get fields with unknown schema type:" + this.type);
     }
 
     @Override
