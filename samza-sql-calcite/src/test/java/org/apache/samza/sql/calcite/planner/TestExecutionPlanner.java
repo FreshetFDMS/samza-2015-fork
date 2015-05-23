@@ -25,8 +25,8 @@ import org.apache.calcite.jdbc.CalcitePrepare;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.schema.Schemas;
 import org.apache.samza.sql.api.data.EntityName;
-import org.apache.samza.sql.api.operators.TupleOperator;
-import org.apache.samza.sql.api.router.OperatorRouter;
+import org.apache.samza.sql.api.operators.OperatorRouter;
+import org.apache.samza.sql.api.operators.SimpleOperator;
 import org.apache.samza.sql.calcite.test.Constants;
 import org.apache.samza.sql.calcite.test.OrderStreamTableFactory;
 import org.apache.samza.sql.calcite.test.Utils;
@@ -83,9 +83,9 @@ public class TestExecutionPlanner {
 
     Assert.assertNotNull(router);
 
-    List<TupleOperator> tupleOperators = router.getTupleOperators(EntityName.getStreamName("kafka:orders"));
+    List<SimpleOperator> operators = router.getNextOperators(EntityName.getStreamName("kafka:orders"));
 
-    Assert.assertNotNull(tupleOperators);
-    Assert.assertEquals(1, tupleOperators.size());
+    Assert.assertNotNull(operators);
+    Assert.assertEquals(2, operators.size());
   }
 }

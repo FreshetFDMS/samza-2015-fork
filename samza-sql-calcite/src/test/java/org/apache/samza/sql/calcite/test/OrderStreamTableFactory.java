@@ -28,7 +28,6 @@ import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.schema.*;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.samza.sql.api.data.*;
 import org.apache.samza.sql.api.data.Schema;
 import org.apache.samza.sql.calcite.rel.StreamScan;
 import org.apache.samza.sql.calcite.schema.AvroSchemaUtils;

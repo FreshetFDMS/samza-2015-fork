@@ -161,38 +161,92 @@ public class AvroSchemaUtils {
 
   private static Schema relDataTypeToAvroType(RelDataType type, String fieldName) {
     SqlTypeName sqlTypeName = type.getSqlTypeName();
+    boolean nullable = type.isNullable();
+
     if (type.isStruct()) {
       return convertStruct(type, String.format("%sType", fieldName));
     } else if (sqlTypeName == SqlTypeName.ARRAY) {
       ArraySqlType at = (ArraySqlType) type;
+
+      if(nullable){
+        return SchemaBuilder.unionOf()
+            .nullType()
+            .and()
+            .array().items(relDataTypeToAvroType(at.getComponentType(), String.format("%sElementType", fieldName)))
+            .endUnion();
+      }
+
       return SchemaBuilder.array().items(relDataTypeToAvroType(at.getComponentType(), String.format("%sElementType", fieldName)));
     } else if (sqlTypeName == SqlTypeName.BIGINT) {
-      return SchemaBuilder.builder().longType();
+      return nullableLong(nullable);
     } else if (sqlTypeName == SqlTypeName.BINARY) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().bytesType().endUnion();
+      }
+
       return SchemaBuilder.builder().bytesType();
     } else if (sqlTypeName == SqlTypeName.BOOLEAN) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().booleanType().endUnion();
+      }
+
       return SchemaBuilder.builder().booleanType();
     } else if (sqlTypeName == SqlTypeName.CHAR) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().stringType().endUnion();
+      }
+
       return SchemaBuilder.builder().stringType();
     } else if (sqlTypeName == SqlTypeName.DOUBLE) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().doubleType().endUnion();
+      }
+
       return SchemaBuilder.builder().doubleType();
     } else if (sqlTypeName == SqlTypeName.FLOAT) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().floatType().endUnion();
+      }
+
       return SchemaBuilder.builder().floatType();
     } else if (sqlTypeName == SqlTypeName.INTEGER) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().intType().endUnion();
+      }
+
       return SchemaBuilder.builder().intType();
     } else if (sqlTypeName == SqlTypeName.VARCHAR) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().stringType().endUnion();
+      }
+
       return SchemaBuilder.builder().stringType();
     } else if (sqlTypeName == SqlTypeName.TIMESTAMP) {
-      return SchemaBuilder.builder().longType();
+      // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
+      return nullableLong(nullable);
     } else if (sqlTypeName == SqlTypeName.DATE) {
-      return SchemaBuilder.builder().longType();
+      // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
+      return nullableLong(nullable);
     } else if (sqlTypeName == SqlTypeName.TIME) {
-      return SchemaBuilder.builder().longType();
+      // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
+      return nullableLong(nullable);
     } else if (sqlTypeName == SqlTypeName.TINYINT) {
+      if(nullable){
+        return SchemaBuilder.unionOf().nullType().and().intType().endUnion();
+      }
+
       return SchemaBuilder.builder().intType();
     } else {
       throw new SamzaException(String.format("fields with type %s is not supported in this version.", type.getFullTypeString()));
     }
+  }
+
+  private static Schema nullableLong(boolean nullable){
+    if(nullable){
+      return SchemaBuilder.unionOf().nullType().and().longType().endUnion();
+    }
+
+    return SchemaBuilder.builder().longType();
   }
 
 }
