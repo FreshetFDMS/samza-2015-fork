@@ -20,6 +20,8 @@
 package org.apache.samza.sql.data.avro;
 
 import org.apache.avro.Schema.Field;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.samza.sql.api.data.Data;
 import org.apache.samza.sql.api.data.Schema;
 
@@ -204,6 +206,19 @@ public class AvroSchema implements Schema {
             return AvroData.getStruct(this, input.value());
           }
 
+          @Override
+          public Data from(Object[] values) {
+            GenericRecord record = new GenericData.Record(this.avroSchema);
+
+            for(org.apache.samza.sql.api.data.Field samzaField : getFields()){
+              record.put(samzaField.getName(), values[samzaField.getIndex()]);
+            }
+
+            // TODO: Nested records and other complex data structures such as arrays and maps
+
+            return AvroData.getStruct(this, record);
+          }
+
         };
       default:
         throw new IllegalArgumentException("Un-recognized complext data type:" + type);
@@ -296,6 +311,11 @@ public class AvroSchema implements Schema {
           + ", input type:" + inputData.schema().getType());
     }
     return inputData;
+  }
+
+  @Override
+  public Data from(Object[] values) {
+    throw new UnsupportedOperationException("This operation should be implemented by the subclass.");
   }
 
   @Override

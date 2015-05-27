@@ -23,9 +23,10 @@ import com.google.common.collect.ImmutableMap;
 import junit.framework.Assert;
 import org.apache.calcite.jdbc.CalcitePrepare;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.schema.Schemas;
 import org.apache.samza.sql.api.expressions.Expression;
-import org.apache.samza.sql.calcite.rel.ProjectableFilterableStreamScan;
+import org.apache.samza.sql.calcite.rel.FilterableStreamScan;
 import org.apache.samza.sql.calcite.test.Constants;
 import org.apache.samza.sql.calcite.test.Utils;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class TestRexToJavaCompiler {
 
     QueryPlanner planner = new QueryPlanner();
     RelNode relNode = planner.getPlan(Constants.SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE, context, true);
-    ProjectableFilterableStreamScan streamScan = (ProjectableFilterableStreamScan) relNode.getInput(0);
+    FilterableStreamScan streamScan = (FilterableStreamScan) relNode.getInput(0);
     RexToJavaCompiler expressionCompiler = new RexToJavaCompiler(relNode.getCluster().getRexBuilder());
 
     List<RelNode> inputs = new ArrayList<RelNode>();
@@ -59,28 +60,32 @@ public class TestRexToJavaCompiler {
     Assert.assertTrue((Boolean) expr.execute(Constants.SAMPLE_ORDER_2));
   }
 
-//  @Test
-//  public void testProjections() throws IOException, SQLException {
-//    SamzaCalciteConnection connection = new SamzaCalciteConnection(Constants.STREAM_MODEL);
-//    CalcitePrepare.Context context = Schemas.makeContext(connection,
-//        connection.getCalciteRootSchema(),
-//        ImmutableList.of(connection.getSchema()),
-//        ImmutableMap.copyOf(Utils.defaultConfiguration()));
-//
-//    QueryPlanner planner = new QueryPlanner();
-//    RelNode relNode = planner.getPlan(Constants.SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_RENAME, context, true);
-//    System.out.println(RelOptUtil.toString(relNode));
-//    /*
-//    ProjectableFilterableStreamScan streamScan = (ProjectableFilterableStreamScan) relNode.getInput(0);
-//    RexToJavaCompiler expressionCompiler = new RexToJavaCompiler(relNode.getCluster().getRexBuilder());
-//
-//    List<RelNode> inputs = new ArrayList<RelNode>();
-//    inputs.add(streamScan);
-//
-//    Expression expr = expressionCompiler.compile(inputs, streamScan.getProjects());
-//    Assert.assertNotNull(expr);
-//
-//    Assert.assertFalse((Boolean) expr.execute(Constants.SAMPLE_ORDER_1));
-//    Assert.assertTrue((Boolean) expr.execute(Constants.SAMPLE_ORDER_2));*/
-//  }
+  @Test
+  public void testProjections() throws IOException, SQLException {
+    SamzaCalciteConnection connection = new SamzaCalciteConnection(Constants.STREAM_MODEL);
+    CalcitePrepare.Context context = Schemas.makeContext(connection,
+        connection.getCalciteRootSchema(),
+        ImmutableList.of(connection.getSchema()),
+        ImmutableMap.copyOf(Utils.defaultConfiguration()));
+
+    QueryPlanner planner = new QueryPlanner();
+    RelNode relNode = planner.getPlan(Constants.SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_RENAME, context, true);
+
+    Project project = (Project) relNode.getInput(0);
+    FilterableStreamScan streamScan = (FilterableStreamScan) project.getInput(0);
+
+    RexToJavaCompiler expressionCompiler = new RexToJavaCompiler(relNode.getCluster().getRexBuilder());
+
+    List<RelNode> inputs = new ArrayList<RelNode>();
+    inputs.add(streamScan);
+
+    Expression expr = expressionCompiler.compile(inputs, project.getProjects());
+    Assert.assertNotNull(expr);
+
+    Object[] results = new Object[2];
+    expr.execute(Constants.SAMPLE_ORDER_1, results);
+
+    Assert.assertEquals("paint", results[0]);
+    Assert.assertEquals(5, results[1]);
+  }
 }

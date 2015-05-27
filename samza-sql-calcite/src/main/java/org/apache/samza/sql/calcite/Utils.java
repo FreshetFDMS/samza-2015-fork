@@ -18,7 +18,6 @@
  */
 package org.apache.samza.sql.calcite;
 
-import org.apache.avro.Schema;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.config.CalciteConnectionProperty;
@@ -38,7 +37,7 @@ public class Utils {
    *
    * @param modelUrl calcite model url
    * @return model as a string
-   * @throws IOException
+   * @throws IOException if model cannot be loaded
    */
   public static String loadCalciteModelToString(String modelUrl) throws IOException {
 

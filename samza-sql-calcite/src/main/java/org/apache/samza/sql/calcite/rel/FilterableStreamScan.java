@@ -31,26 +31,22 @@ import org.apache.calcite.util.ImmutableIntList;
 
 import java.util.List;
 
-public class ProjectableFilterableStreamScan extends StreamScan {
+public class FilterableStreamScan extends StreamScan {
   public final ImmutableList<RexNode> filters;
-  public final ImmutableIntList projects;
 
 
-  ProjectableFilterableStreamScan(RelOptCluster cluster, RelOptTable table,
-                                  ImmutableList<RexNode> filters,
-                                  ImmutableIntList projects) {
+  FilterableStreamScan(RelOptCluster cluster, RelOptTable table,
+                       ImmutableList<RexNode> filters) {
     super(cluster, table);
     this.filters = filters;
-    this.projects = projects;
     Preconditions.checkArgument(canHandle(table));
   }
 
-  public static ProjectableFilterableStreamScan create(RelOptCluster cluster,
-                                                       RelOptTable relOptTable, List<RexNode> filters,
-                                                       List<Integer> projects) {
+  public static FilterableStreamScan create(RelOptCluster cluster,
+                                            RelOptTable relOptTable, List<RexNode> filters) {
     // TODO: Verify whether this should be similar to BindableScan
-    return new ProjectableFilterableStreamScan(cluster, relOptTable,
-        ImmutableList.copyOf(filters), ImmutableIntList.copyOf(projects));
+    return new FilterableStreamScan(cluster, relOptTable,
+        ImmutableList.copyOf(filters));
   }
 
   @Override
@@ -59,24 +55,19 @@ public class ProjectableFilterableStreamScan extends StreamScan {
         getCluster().getTypeFactory().builder();
     final List<RelDataTypeField> fieldList =
         table.getRowType().getFieldList();
-    for (int project : projects) {
-      builder.add(fieldList.get(project));
-    }
+
+    builder.addAll(fieldList);
+
     return builder.build();
   }
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
-        .itemIf("filters", filters, !filters.isEmpty())
-        .itemIf("projects", projects, !projects.equals(identity()));
+        .itemIf("filters", filters, !filters.isEmpty());
   }
 
   public ImmutableList<RexNode> getFilters() {
     return filters;
-  }
-
-  public ImmutableIntList getProjects() {
-    return projects;
   }
 }

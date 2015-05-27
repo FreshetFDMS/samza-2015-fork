@@ -69,6 +69,16 @@ public class StringSchema implements Schema {
     }
 
     @Override
+    public Data from(Object[] values) {
+        if(values.length != 1){
+            throw new IllegalArgumentException("Can't transform array of size not equal to 1 to primitive type. this type:"
+                + this.type + ", input array size: " + values.length);
+        }
+
+        return new StringData(values[0]);
+    }
+
+    @Override
     public boolean equals(Schema other) {
         return other.getType() == this.type;
     }

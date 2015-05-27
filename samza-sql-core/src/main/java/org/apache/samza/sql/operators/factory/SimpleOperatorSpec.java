@@ -106,6 +106,7 @@ public abstract class SimpleOperatorSpec implements OperatorSpec {
 
   @Override
   public void setInputNames(List<EntityName> inputNames) {
+    this.inputs.clear();
     this.inputs.addAll(inputNames);
   }
 

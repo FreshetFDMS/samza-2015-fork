@@ -16,13 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.operators.scan;
+package org.apache.samza.sql.operators.project;
 
 import org.apache.samza.sql.api.data.EntityName;
-import org.apache.samza.sql.operators.factory.SimpleOperatorSpec;
+import org.apache.samza.sql.api.data.Schema;
+import org.apache.samza.sql.api.expressions.Expression;
+import org.apache.samza.sql.operators.factory.TypeAwareOperatorSpec;
 
-public class StreamScanSpec extends SimpleOperatorSpec{
-  public StreamScanSpec(String id, EntityName input, EntityName output) {
-    super(id, input, output);
+public class ProjectSpec extends TypeAwareOperatorSpec {
+
+  private Expression projectExpression;
+
+  public ProjectSpec(String id, EntityName input, EntityName output, Expression projectExpression, Schema inputType, Schema outputType) {
+    super(id, input, output, inputType, outputType);
+    this.projectExpression = projectExpression;
+  }
+
+  public Expression getProjectExpression() {
+    return projectExpression;
   }
 }

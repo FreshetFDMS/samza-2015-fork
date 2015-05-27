@@ -36,7 +36,7 @@ public class Utils {
    *
    * @param schemaUrl Avro schema url
    * @return avro schema corresponding to the schema url
-   * @throws IOException
+   * @throws IOException if avro schema cannot be loaded
    */
   public static Schema loadAvroSchemaFromClassPath(String schemaUrl) throws IOException {
 

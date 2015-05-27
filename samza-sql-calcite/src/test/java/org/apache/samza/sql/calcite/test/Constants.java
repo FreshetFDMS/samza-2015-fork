@@ -20,28 +20,37 @@ package org.apache.samza.sql.calcite.test;
 
 
 public class Constants {
-  public static final String STREAM_SCHEMA = "     {\n"
-      + "       name: 'STREAMS',\n"
-      + "       tables: [ {\n"
-      + "         type: 'custom',\n"
-      + "         name: 'ORDERS',\n"
-      + "         stream: {\n"
-      + "           stream: true\n"
-      + "         },\n"
-      + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
-      + "       }, {"
-      + "         type: 'custom',\n"
-      + "         name: 'FILTEREDORDERS',\n"
-      + "         stream: {\n"
-      + "            stream: true\n"
-      + "         },\n"
-      + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
-      + "       }]\n"
-      + "     }\n";
+    public static final String STREAM_SCHEMA = "{\n"
+        + "       name: 'KAFKA',\n"
+        + "       tables: [ {\n"
+        + "         type: 'custom',\n"
+        + "         name: 'ORDERS',\n"
+        + "         stream: {\n"
+        + "           stream: true\n"
+        + "         },\n"
+        + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
+        + "       },\n"
+        + "       {\n"
+        + "         type: 'custom',\n"
+        + "         name: 'FILTEREDORDERS',\n"
+        + "         stream: {\n"
+        + "            stream: true\n"
+        + "         },\n"
+        + "         factory: '" + OrderStreamTableFactory.class.getName() + "'\n"
+        + "       },"
+        + "       {\n"
+        + "         type: 'custom',\n"
+        + "         name: 'FILTEREDPROJECTEDORDERS',\n"
+        + "         stream: {\n"
+        + "           stream: true\n"
+        + "         },\n"
+        + "         factory: '" + ProjectedOrdersStreamTableFactory.class.getName() + "'\n"
+        + "       }]\n"
+        + " }\n";
 
   public static final String STREAM_MODEL = "{\n"
       + "  version: '1.0',\n"
-      + "  defaultSchema: 'STREAMS',\n"
+      + "  defaultSchema: 'KAFKA',\n"
       + "   schemas: [\n"
       + STREAM_SCHEMA
       + "   ]\n"
@@ -51,7 +60,7 @@ public class Constants {
       "LogicalDelta\n" +
           "  LogicalProject(id=[$0], productId=[$1], units=[$2], rowtime=[$3])\n" +
           "    LogicalFilter(condition=[>($2, 5)])\n" +
-          "      StreamScan(table=[[STREAMS, ORDERS]])";
+          "      StreamScan(table=[[KAFKA, ORDERS]])";
   public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE =
       "select stream * from orders where units > 5";
 
@@ -60,6 +69,9 @@ public class Constants {
 
   public static final String INSERT_INTO =
       "insert into filteredorders select stream * from orders where units > 5";
+
+    public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_AND_PROJECT =
+        "insert into filteredprojectedorders select stream productId, (units + 1) as quantity from orders where units > 5";
 
   public static final String EXPLICIT_WINDOW_DEFS = "WITH HourlyTotals (rowtime, productId, c, su) AS (\n" +
       "  SELECT FLOOR(rowtime TO HOUR),\n" +
@@ -79,11 +91,11 @@ public class Constants {
 
   public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_OPTIMIZED_PLAN_EXPECTED =
       "LogicalDelta\n" +
-          "  ProjectableFilterableStreamScan(table=[[STREAMS, ORDERS]], filters=[[>($2, 5)]])";
+          "  FilterableStreamScan(table=[[KAFKA, ORDERS]], filters=[[>($2, 5)]])";
 
   public static final String INSERT_INTO_OPTIMIZED_PLAN_EXPECTED =
-      "LogicalTableModify(table=[[STREAMS, FILTEREDORDERS]], operation=[INSERT], updateColumnList=[[]], flattened=[false])\n" +
-          "  ProjectableFilterableStreamScan(table=[[STREAMS, ORDERS]], filters=[[>($2, 5)]])";
+      "LogicalTableModify(table=[[KAFKA, FILTEREDORDERS]], operation=[INSERT], updateColumnList=[[]], flattened=[false])\n" +
+          "  FilterableStreamScan(table=[[KAFKA, ORDERS]], filters=[[>($2, 5)]])";
 
   public static final Object[] SAMPLE_ORDER_1 = {1, "paint", 4, System.currentTimeMillis()};
   public static final Object[] SAMPLE_ORDER_2 = {2, "salt", 7, System.currentTimeMillis()};

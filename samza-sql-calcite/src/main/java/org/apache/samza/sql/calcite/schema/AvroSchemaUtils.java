@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Defines method which converts Avro {@link org.apache.avro.Schema} to {@link org.apache.calcite.rel.type.RelDataType}
  * and vice versa.
- * <p></p>
+ * <p/>
  * <p>Inspired by parquet-mr.</p>
  */
 public class AvroSchemaUtils {

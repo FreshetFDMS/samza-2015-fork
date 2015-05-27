@@ -42,7 +42,6 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.ChainedSqlOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.samza.sql.calcite.planner.rules.FilterableStreamScanRule;
-import org.apache.samza.sql.calcite.planner.rules.ProjectableStreamScanRule;
 import org.apache.samza.sql.calcite.planner.rules.RemoveIdentityProjectRule;
 
 import java.util.List;
@@ -116,8 +115,9 @@ public class QueryPlanner {
   /**
    * Transform streaming query to a query plan.
    *
-   * @param query   streaming query in SQL with streaming extensions
-   * @param context query prepare context
+   * @param query    streaming query in SQL with streaming extensions
+   * @param context  query prepare context
+   * @param optimize whether optimized query plan is needed
    * @return query plan
    */
   public RelNode getPlan(String query, CalcitePrepare.Context context, boolean optimize) {
@@ -220,7 +220,6 @@ public class QueryPlanner {
   }
 
   private RelNode optimize(RelNode rootRel) {
-    // TODO: Add ProjectableStreamScanRule back after fixing the apply logic
     final HepProgram hepProgram = new HepProgramBuilder()
         .addRuleInstance(FilterableStreamScanRule.INSTANCE)
         .addRuleInstance(RemoveIdentityProjectRule.INSTANCE).build();

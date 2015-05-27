@@ -28,7 +28,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
-import org.apache.samza.sql.calcite.rel.ProjectableFilterableStreamScan;
+import org.apache.samza.sql.calcite.rel.FilterableStreamScan;
 import org.apache.samza.sql.calcite.rel.StreamScan;
 
 
@@ -52,17 +52,14 @@ public abstract class FilterableStreamScanRule extends RelOptRule {
   protected void apply(RelOptRuleCall call, Filter filter, StreamScan scan) {
     final ImmutableIntList projects;
     final ImmutableList.Builder<RexNode> filters = ImmutableList.builder();
-    if(scan instanceof ProjectableFilterableStreamScan){
-      final ProjectableFilterableStreamScan pfStreamScan = (ProjectableFilterableStreamScan)scan;
+    if(scan instanceof FilterableStreamScan){
+      final FilterableStreamScan pfStreamScan = (FilterableStreamScan)scan;
       filters.addAll(pfStreamScan.filters);
-      projects = pfStreamScan.projects;
-    } else {
-      projects = scan.identity();
     }
 
-    final Mapping mapping = Mappings.target(projects, scan.getTable().getRowType().getFieldCount());
+    final Mapping mapping = Mappings.target(scan.identity(), scan.getTable().getRowType().getFieldCount());
     filters.add(RexUtil.apply(mapping, filter.getCondition()));
-    call.transformTo(ProjectableFilterableStreamScan.create(scan.getCluster(), scan.getTable(),
-      filters.build(), projects));
+    call.transformTo(FilterableStreamScan.create(scan.getCluster(), scan.getTable(),
+        filters.build()));
   }
 }

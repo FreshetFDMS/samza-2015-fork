@@ -16,38 +16,13 @@
  *
  * A JSON model of a simple Calcite schema.
  */
+
 {
-  version: '1.0',
-  defaultSchema: 'KAFKA',
-  schemas: [
-    {
-      name: 'KAFKA',
-      tables: [
-        {
-          type: 'custom',
-          name: 'ORDERS',
-          stream: {
-            stream: true
-          },
-          factory: 'org.apache.samza.test.integration.sql.OrdersStreamFactory'
-        },
-        {
-          type: 'custom',
-          name: 'FILTEREDORDERS',
-          stream: {
-            stream: true
-          },
-          factory: 'org.apache.samza.test.integration.sql.OrdersStreamFactory'
-        },
-        {
-          type: 'custom',
-          name: 'FILTEREDPROJECTEDORDERS',
-          stream: {
-            stream: true
-          },
-          factory: 'org.apache.samza.test.integration.sql.ProjectedOrdersStreamFactory'
-        }
-      ]
-    }
-  ]
+     "type": "record",
+     "namespace": "org.apache.samza",
+     "name": "ProjectedOrders",
+     "fields": [
+       { "name": "productId", "type": "string" },
+       { "name": "quantity", "type": "int"}
+     ]
 }

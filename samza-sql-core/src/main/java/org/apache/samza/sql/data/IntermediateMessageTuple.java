@@ -41,6 +41,8 @@ public class IntermediateMessageTuple implements Tuple {
    * @param delete     whether this tuple indicates a deletion from time-varying relation
    * @param key        unique key of the tuple
    * @param entityName stream name corresponding to time-varying relation this tuple belongs to
+   * @param createTimeNano creation time of the message
+   * @param offset         offset of the message
    */
   public IntermediateMessageTuple(Data message, boolean delete, Data key, EntityName entityName, long createTimeNano, Offset offset) {
     this.message = message;
@@ -91,5 +93,20 @@ public class IntermediateMessageTuple implements Tuple {
    */
   public static IntermediateMessageTuple fromTuple(Tuple t, boolean delete, EntityName streamName) {
     return new IntermediateMessageTuple(t.getMessage(), delete, t.getKey(), streamName, t.getCreateTimeNano(), t.getOffset());
+  }
+
+  /**
+   * Creates instance of {@link IntermediateMessageTuple} from a message and related data.
+   *
+   * @param message          message
+   * @param delete           is this tuple indicates a deletion from time-varying relation
+   * @param streamName       stream name corresponding to time-varying relation this tuple belongs to
+   * @param key              unique key of the tuple
+   * @param createTimeNano   creation time of the message
+   * @param offset           offset of the message
+   * @return instance of {@link IntermediateMessageTuple}
+   */
+  public static IntermediateMessageTuple fromData(Data message, boolean delete, EntityName streamName, Data key, long createTimeNano, Offset offset){
+    return new IntermediateMessageTuple(message, delete, key, streamName, createTimeNano, offset);
   }
 }

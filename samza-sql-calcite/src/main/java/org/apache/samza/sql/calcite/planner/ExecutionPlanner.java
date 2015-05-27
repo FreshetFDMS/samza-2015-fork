@@ -40,12 +40,16 @@ import org.apache.samza.sql.api.operators.OperatorRouter;
 import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.api.operators.SimpleOperator;
 import org.apache.samza.sql.api.operators.SqlOperatorFactory;
-import org.apache.samza.sql.calcite.rel.ProjectableFilterableStreamScan;
+import org.apache.samza.sql.calcite.rel.FilterableStreamScan;
+import org.apache.samza.sql.calcite.rel.StreamScan;
+import org.apache.samza.sql.calcite.schema.AvroSchemaUtils;
 import org.apache.samza.sql.calcite.schema.Stream;
+import org.apache.samza.sql.data.avro.AvroSchema;
 import org.apache.samza.sql.operators.factory.SimpleOperatorFactoryImpl;
 import org.apache.samza.sql.operators.factory.SimpleOperatorSpec;
 import org.apache.samza.sql.operators.factory.SimpleRouter;
 import org.apache.samza.sql.operators.insert.InsertToStreamSpec;
+import org.apache.samza.sql.operators.project.ProjectSpec;
 import org.apache.samza.sql.operators.scan.FilterableStreamScanSpec;
 import org.apache.samza.sql.operators.scan.StreamScanSpec;
 import org.slf4j.Logger;
@@ -118,7 +122,7 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
           /* StreamScan is special because we can ignore it and directly wire the input stream of scan
            * to the stream scan's parent (operator corresponding to current node).
            */
-          EntityName input = ((SimpleOperatorSpec) inputSpec).getOutputName();
+          EntityName input = ((SimpleOperatorSpec) inputSpec).getInputName();
 
           try {
             // Setting the input to this operator in operators spec.
@@ -159,13 +163,15 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
         } catch (Exception e) {
           throw new SamzaException(String.format("Unable to add tuple operator. Input: %s, Operator: %s", input, spec.getId()), e);
         }
+      } else if (spec instanceof StreamScanSpec) {
+        // Do nothing. We just ignore simple stream scans and directly wire the input stream to next operator.
       } else {
         throw new SamzaException(String.format("Unsupported terminal operator with spec of type: %s", spec.getClass()));
       }
     }
   }
 
-  public void visit(ProjectableFilterableStreamScan scan) {
+  public void visit(FilterableStreamScan scan) {
     EntityName input = EntityName.getStreamName(Joiner.on(":").join(
         Lists.transform(scan.getTable().getQualifiedName(),
             new Function<String, String>() {
@@ -205,10 +211,34 @@ public class ExecutionPlanner extends RelVisitor implements ReflectiveVisitor {
   }
 
   public void visit(Project project) {
-//    EntityName output = genOutputStreamName(OP_PROJECT);
-//    Expression projectExpr = rexToJavaCompiler.compile(project.getInputs(), project.getProjects());
-//    this.spec = new ProjectSpec(null, output, projectExpr, project.getInput().getRowType(), project.getRowType());
-    throw new UnsupportedOperationException("Project operator is not supported yet.");
+    RelNode input = project.getInput();
+    if (input instanceof StreamScan) {
+      EntityName output = genOutputStreamName(OP_PROJECT);
+      Expression projectExpr = rexToJavaCompiler.compile(project.getInputs(), project.getProjects());
+      Stream inputStream = ((StreamScan) input).getTable().unwrap(Stream.class);
+
+      if (inputStream == null) {
+        throw new SamzaException("Input's table should be a Stream.");
+      }
+
+      Schema inputStreamType = inputStream.getType(relDataTypeFactory);
+
+      /**
+       * Note (Milinda on 04/23/2015):
+       * Here we transform type (RelDataType) of project operator to Samza Schema.
+       * Because we just use this schema as a metadata to convert incoming message to object array (Object[]), I think
+       * type of Schema implementation doesn't matter much. So I am using AvroSchema implementation. But its better
+       * if we can implement a dummy Samza Schema to just handle the type information for intermediate operators.
+       *
+       * TODO: We need to fix this to use proper Schema implementation. This can be a problem otherwise due to incompatible serializers.
+       */
+      Schema outputSchema = AvroSchema.getSchema(AvroSchemaUtils.relDataTypeToAvroSchema(project.getRowType()));
+
+      this.spec = new ProjectSpec(genOperatorId("project"), null, output, projectExpr, inputStreamType, outputSchema);
+    } else {
+      // TODO: Remove this once we add other types of scans
+      throw new IllegalArgumentException("Unsupported Project input. Only inputs of type StreamScan is supported.");
+    }
   }
 
   public void visit(RelNode relNode) {
