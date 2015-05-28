@@ -224,11 +224,9 @@ public class AvroSchemaUtils {
       // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
       return nullableLong(nullable);
     } else if (sqlTypeName == SqlTypeName.DATE) {
-      // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
-      return nullableLong(nullable);
+      throw new IllegalArgumentException("Unsupported type DATE.");
     } else if (sqlTypeName == SqlTypeName.TIME) {
-      // TODO: Using long because Avro doesn't support date/time types. May be we should remove support for date/time types?
-      return nullableLong(nullable);
+      throw new IllegalArgumentException("Unsupported type TIME.");
     } else if (sqlTypeName == SqlTypeName.TINYINT) {
       if(nullable){
         return SchemaBuilder.unionOf().nullType().and().intType().endUnion();
