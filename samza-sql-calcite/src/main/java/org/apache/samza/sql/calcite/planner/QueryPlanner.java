@@ -41,8 +41,7 @@ import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.ChainedSqlOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidator;
-import org.apache.samza.sql.calcite.planner.rules.FilterableStreamScanRule;
-import org.apache.samza.sql.calcite.planner.rules.RemoveIdentityProjectRule;
+import org.apache.samza.sql.calcite.planner.rules.*;
 
 import java.util.List;
 
@@ -221,6 +220,7 @@ public class QueryPlanner {
 
   private RelNode optimize(RelNode rootRel) {
     final HepProgram hepProgram = new HepProgramBuilder()
+        .addRuleInstance(StreamingAggregateRule.INSTANCE)
         .addRuleInstance(FilterableStreamScanRule.INSTANCE)
         .addRuleInstance(RemoveIdentityProjectRule.INSTANCE).build();
     final HepPlanner planner = new HepPlanner(hepProgram);

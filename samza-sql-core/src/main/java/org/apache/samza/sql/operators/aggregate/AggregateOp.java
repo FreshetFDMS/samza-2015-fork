@@ -16,46 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.operators.insert;
+package org.apache.samza.sql.operators.aggregate;
 
 import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
+import org.apache.samza.sql.operators.aggregate.api.Grouping;
 import org.apache.samza.sql.operators.factory.SimpleOperatorImpl;
-import org.apache.samza.system.OutgoingMessageEnvelope;
-import org.apache.samza.system.SystemStream;
 import org.apache.samza.task.TaskContext;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
 
-import java.util.StringTokenizer;
+public class AggregateOp extends SimpleOperatorImpl {
 
-public class InsertToStreamOp extends SimpleOperatorImpl {
-  private InsertToStreamSpec spec;
-
-  private SystemStream outputStream;
+  private final AggregateSpec spec;
 
   /**
-   * Ctor of <code>SimpleOperator</code> class
+   * Ctor of <code>AggregateOp</code> class
    *
    * @param spec The specification of this operator
    */
-  public InsertToStreamOp(InsertToStreamSpec spec) {
+  public AggregateOp(AggregateSpec spec) {
     super(spec);
     this.spec = spec;
-
-    if(!spec.getOutputName().isStream()){
-      throw new IllegalArgumentException("Output entity " + spec.getOutputName() + " should be a stream.");
-    }
-
-    StringTokenizer tokenizer = new StringTokenizer(spec.getOutputName().getName(), ":");
-
-    if(tokenizer.countTokens() != 2){
-      throw new IllegalArgumentException("Output stream name should be in the form <system>:<stream>, " +
-          "but the given name is " + spec.getOutputName().getName());
-    }
-
-    outputStream = new SystemStream(tokenizer.nextToken(), tokenizer.nextToken());
   }
 
   @Override
@@ -70,14 +53,13 @@ public class InsertToStreamOp extends SimpleOperatorImpl {
 
   @Override
   protected void realProcess(Relation rel, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    throw new UnsupportedOperationException("InsertToStreamOp operator doesn't support processing relations.");
+
   }
 
   @Override
   protected void realProcess(Tuple ituple, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    // TODO: Separate out insert into and insert stream operators
-    if (!ituple.isDelete()) {
-      collector.send(new OutgoingMessageEnvelope(outputStream, ituple.getKey(), ituple.getMessage()));
+    for (Grouping grouping : spec.getGroupings()) {
+      grouping.send(ituple, collector);
     }
   }
 }

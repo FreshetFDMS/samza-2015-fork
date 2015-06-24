@@ -97,6 +97,10 @@ public class Constants {
       "LogicalTableModify(table=[[KAFKA, FILTEREDORDERS]], operation=[INSERT], updateColumnList=[[]], flattened=[false])\n" +
           "  FilterableStreamScan(table=[[KAFKA, ORDERS]], filters=[[>($2, 5)]])";
 
+  public static final String TUMBLING_WINDOW_AGGREGATE =
+      "select stream FLOOR(rowtime to HOUR) AS rowtime, productId, COUNT(*) as c, SUM(units) as units from orders" +
+          " group by FLOOR(rowtime to HOUR), productId";
+
   public static final Object[] SAMPLE_ORDER_1 = {1, "paint", 4, System.currentTimeMillis()};
   public static final Object[] SAMPLE_ORDER_2 = {2, "salt", 7, System.currentTimeMillis()};
 

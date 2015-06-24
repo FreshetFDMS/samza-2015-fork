@@ -83,4 +83,19 @@ public class TestQueryPlanner {
     Assert.assertTrue(s.contains(Constants.INSERT_INTO_OPTIMIZED_PLAN_EXPECTED));
   }
 
+  @Test
+  public void testTumblingWindows() throws IOException, SQLException {
+
+    SamzaCalciteConnection connection = new SamzaCalciteConnection(Constants.STREAM_MODEL);
+    CalcitePrepare.Context context = Schemas.makeContext(connection,
+        connection.getCalciteRootSchema(),
+        ImmutableList.of(connection.getSchema()),
+        ImmutableMap.copyOf(Utils.defaultConfiguration()));
+
+    QueryPlanner planner = new QueryPlanner();
+    RelNode relNode = planner.getPlan(Constants.TUMBLING_WINDOW_AGGREGATE, context, true);
+    Assert.assertNotNull(relNode);
+
+    System.out.println(RelOptUtil.toString(relNode));
+  }
 }

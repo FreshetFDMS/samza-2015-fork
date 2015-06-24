@@ -109,7 +109,9 @@ class RunLoop(
         val taskInstance = systemStreamPartitionToTaskInstance(ssp)
         val coordinator = new ReadableCoordinator(taskInstance.taskName)
 
-        taskInstance.process(envelope, coordinator)
+        updateTimer(metrics.taskProcessMs) {
+          taskInstance.process(envelope, coordinator)
+        }
         checkCoordinator(coordinator)
       } else {
         trace("No incoming message envelope was available.")

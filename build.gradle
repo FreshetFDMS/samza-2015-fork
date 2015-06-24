@@ -272,6 +272,7 @@ project(":samza-sql-core_$scalaVersion") {
     compile project(":samza-core_$scalaVersion")
     compile project(":samza-kv_$scalaVersion")
     compile "commons-collections:commons-collections:$commonsCollectionVersion"
+    compile "com.google.guava:guava:$guavaVersion"
     compile "org.apache.avro:avro:$avroVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-all:$mockitoVersion"
