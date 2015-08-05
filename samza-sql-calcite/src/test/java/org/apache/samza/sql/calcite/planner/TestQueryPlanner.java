@@ -98,4 +98,34 @@ public class TestQueryPlanner {
 
     System.out.println(RelOptUtil.toString(relNode));
   }
+
+  @Test
+  public void testSlidingWindowsIncludingWith() throws IOException, SQLException {
+    SamzaCalciteConnection connection = new SamzaCalciteConnection(Constants.STREAM_MODEL);
+    CalcitePrepare.Context context = Schemas.makeContext(connection,
+        connection.getCalciteRootSchema(),
+        ImmutableList.of(connection.getSchema()),
+        ImmutableMap.copyOf(Utils.defaultConfiguration()));
+
+    QueryPlanner planner = new QueryPlanner();
+    RelNode relNode = planner.getPlan(Constants.EXPLICIT_WINDOW_DEFS, context, true);
+    Assert.assertNotNull(relNode);
+
+    System.out.println(RelOptUtil.toString(relNode));
+  }
+
+  @Test
+  public void testHoppingWindow() throws IOException, SQLException {
+    SamzaCalciteConnection connection = new SamzaCalciteConnection(Constants.STREAM_MODEL);
+    CalcitePrepare.Context context = Schemas.makeContext(connection,
+        connection.getCalciteRootSchema(),
+        ImmutableList.of(connection.getSchema()),
+        ImmutableMap.copyOf(Utils.defaultConfiguration()));
+
+    QueryPlanner planner = new QueryPlanner();
+    RelNode relNode = planner.getPlan(Constants.SLIDING_WINDOW, context, true);
+    Assert.assertNotNull(relNode);
+
+    System.out.println(RelOptUtil.toString(relNode));
+  }
 }

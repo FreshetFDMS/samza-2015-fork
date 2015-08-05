@@ -29,7 +29,7 @@ import org.apache.samza.sql.calcite.schema.Stream;
 
 public abstract class RemoveIdentityProjectRule extends RelOptRule {
 
-  public static final RemoveIdentityProjectRule INSTANCE =
+  public static final RemoveIdentityProjectRule PROJECT =
       new RemoveIdentityProjectRule(
           operand(Project.class,
               operand(StreamScan.class, none())),

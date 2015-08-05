@@ -34,7 +34,7 @@ import org.apache.samza.sql.calcite.rel.StreamingAggregate;
  */
 public abstract class StreamingAggregateRule extends RelOptRule {
 
-  public static final StreamingAggregateRule INSTANCE = new StreamingAggregateRule(
+  public static final StreamingAggregateRule DELTA = new StreamingAggregateRule(
       operand(LogicalDelta.class, operand(LogicalAggregate.class, any())), "StreamingAggregateRule") {
     @Override
     public void onMatch(RelOptRuleCall call) {

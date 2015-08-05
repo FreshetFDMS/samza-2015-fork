@@ -199,6 +199,7 @@ public class QueryPlanner {
       planner.registerAbstractRelationalRules();
     }
     RelOptUtil.registerAbstractRels(planner);
+    planner.addRule(ProjectToWindowRule.INSTANCE);
     for (RelOptRule rule : DEFAULT_RULES) {
       planner.addRule(rule);
     }
@@ -220,9 +221,10 @@ public class QueryPlanner {
 
   private RelNode optimize(RelNode rootRel) {
     final HepProgram hepProgram = new HepProgramBuilder()
-        .addRuleInstance(StreamingAggregateRule.INSTANCE)
-        .addRuleInstance(FilterableStreamScanRule.INSTANCE)
-        .addRuleInstance(RemoveIdentityProjectRule.INSTANCE).build();
+        .addRuleInstance(ProjectToWindowRule.PROJECT)
+        .addRuleInstance(StreamingAggregateRule.DELTA)
+        .addRuleInstance(FilterableStreamScanRule.FILTER)
+        .addRuleInstance(RemoveIdentityProjectRule.PROJECT).build();
     final HepPlanner planner = new HepPlanner(hepProgram);
     planner.setRoot(rootRel);
     rootRel = planner.findBestExp();

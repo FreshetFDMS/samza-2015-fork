@@ -26,8 +26,14 @@ import org.apache.samza.sql.operators.factory.SimpleOperatorSpec;
 import java.util.List;
 
 public class AggregateSpec extends SimpleOperatorSpec{
-  public static final String OP_TYPE = "Aggregate";
 
+  /*
+   * For {@code GROUP BY} groupings contains one element.
+   * If  {@code GROUP BY} is not specified or if {@code GROUP BY ()} is specified
+   * groupings will contain empty grouping.
+   *
+   *
+   */
   private final ImmutableList<Grouping> groupings;
 
   public AggregateSpec(String id, EntityName input, EntityName output, List<Grouping> groupings) {
@@ -38,4 +44,5 @@ public class AggregateSpec extends SimpleOperatorSpec{
   public ImmutableList<Grouping> getGroupings() {
     return groupings;
   }
+
 }

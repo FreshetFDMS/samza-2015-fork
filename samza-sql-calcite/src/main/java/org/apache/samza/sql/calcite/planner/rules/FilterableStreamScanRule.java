@@ -34,7 +34,7 @@ import org.apache.samza.sql.calcite.rel.StreamScan;
 
 public abstract class FilterableStreamScanRule extends RelOptRule {
 
-  public static final FilterableStreamScanRule INSTANCE =
+  public static final FilterableStreamScanRule FILTER =
       new FilterableStreamScanRule(operand(Filter.class,
           operand(StreamScan.class, none())), "FilterableStreamScanRule") {
         @Override
