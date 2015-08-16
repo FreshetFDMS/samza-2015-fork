@@ -23,7 +23,7 @@ import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.OperatorCallback;
-import org.apache.samza.sql.operators.factory.SimpleOperatorImpl;
+import org.apache.samza.sql.operators.SimpleOperatorImpl;
 import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.system.OutgoingMessageEnvelope;
@@ -31,7 +31,6 @@ import org.apache.samza.system.SystemStream;
 import org.apache.samza.task.TaskContext;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
-
 
 /**
  * This is an example build-in operator that performs a simple stream re-partition operation.
@@ -66,7 +65,7 @@ public class PartitionOp extends SimpleOperatorImpl {
    * @param parNum The number of partitions used for the output stream
    */
   public PartitionOp(String id, String input, String system, String output, String parKey, int parNum) {
-    this(new PartitionSpec(id, input, new SystemStream(system, output), parKey, parNum));
+    this(new PartitionSpec(id, input, new SystemStream(system, output), parNum, parKey));
   }
 
   /**
@@ -82,28 +81,27 @@ public class PartitionOp extends SimpleOperatorImpl {
    */
   public PartitionOp(String id, String input, String system, String output, String parKey, int parNum,
       OperatorCallback callback) {
-    super(new PartitionSpec(id, input, new SystemStream(system, output), parKey, parNum), callback);
+    super(new PartitionSpec(id, input, new SystemStream(system, output), parNum, parKey), callback);
     this.spec = (PartitionSpec) super.getSpec();
   }
 
   @Override
   public void init(Config config, TaskContext context) throws Exception {
-    // TODO Auto-generated method stub
     // No need to initialize store since all inputs are immediately send out
   }
 
   @Override
   protected void realRefresh(long timeNano, SimpleMessageCollector collector, TaskCoordinator coordinator)
       throws Exception {
-    // TODO Auto-generated method stub
     // NOOP or flush
   }
 
   @Override
   protected void realProcess(Tuple tuple, SimpleMessageCollector collector, TaskCoordinator coordinator)
       throws Exception {
-    collector.send(new OutgoingMessageEnvelope(PartitionOp.this.spec.getSystemStream(), tuple.getMessage()
-        .getFieldData(PartitionOp.this.spec.getParKey()).value(), tuple.getKey().value(), tuple.getMessage().value()));
+    collector.send(new OutgoingMessageEnvelope(PartitionOp.this.spec.getSystemStream(),
+        this.spec.getPartitionKeyGenerator().execute(tuple), tuple.getKey().value(),
+        tuple.getMessage().value()));
   }
 
   @Override
@@ -111,9 +109,9 @@ public class PartitionOp extends SimpleOperatorImpl {
       throws Exception {
     for(KeyValueIterator<?, Tuple> iter = deltaRelation.all(); iter.hasNext(); ) {
       Entry<?, Tuple> entry = iter.next();
-      collector.send(new OutgoingMessageEnvelope(PartitionOp.this.spec.getSystemStream(), entry.getValue().getMessage()
-          .getFieldData(PartitionOp.this.spec.getParKey()).value(), entry.getValue().getKey().value(), entry.getValue()
-          .getMessage().value()));
+      collector.send(new OutgoingMessageEnvelope(PartitionOp.this.spec.getSystemStream(),
+          this.spec.getPartitionKeyGenerator().execute(entry.getValue()),
+          entry.getValue().getKey().value(), entry.getValue().getMessage().value()));
     }
   }
 

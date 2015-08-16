@@ -22,10 +22,23 @@ package org.apache.samza.sql.operators.factory;
 import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.api.operators.SimpleOperator;
 import org.apache.samza.sql.api.operators.SqlOperatorFactory;
+import org.apache.samza.sql.operators.filter.FilterOp;
+import org.apache.samza.sql.operators.filter.FilterSpec;
+import org.apache.samza.sql.operators.join.JoinSpec;
+import org.apache.samza.sql.operators.join.StreamRelationJoin;
 import org.apache.samza.sql.operators.join.StreamStreamJoin;
 import org.apache.samza.sql.operators.join.StreamStreamJoinSpec;
+import org.apache.samza.sql.operators.modify.InsertToStreamOp;
+import org.apache.samza.sql.operators.modify.Operation;
+import org.apache.samza.sql.operators.modify.StreamModifySpec;
 import org.apache.samza.sql.operators.partition.PartitionOp;
 import org.apache.samza.sql.operators.partition.PartitionSpec;
+import org.apache.samza.sql.operators.project.ProjectOp;
+import org.apache.samza.sql.operators.project.ProjectSpec;
+import org.apache.samza.sql.operators.scan.StreamScan;
+import org.apache.samza.sql.operators.scan.StreamScanSpec;
+import org.apache.samza.sql.operators.scan.TableScan;
+import org.apache.samza.sql.operators.scan.TableScanSpec;
 import org.apache.samza.sql.operators.window.BoundedTimeWindow;
 import org.apache.samza.sql.operators.window.WindowSpec;
 
@@ -33,7 +46,6 @@ import org.apache.samza.sql.operators.window.WindowSpec;
 /**
  * This simple factory class provides method to create the build-in operators per operator specification.
  * It can be extended when the build-in operators expand.
- *
  */
 public class SimpleOperatorFactoryImpl implements SqlOperatorFactory {
 
@@ -45,7 +57,27 @@ public class SimpleOperatorFactoryImpl implements SqlOperatorFactory {
       return new StreamStreamJoin((StreamStreamJoinSpec) spec);
     } else if (spec instanceof WindowSpec) {
       return new BoundedTimeWindow((WindowSpec) spec);
+    } else if (spec instanceof FilterSpec) {
+      return new FilterOp((FilterSpec) spec);
+    } else if (spec instanceof ProjectSpec) {
+      return new ProjectOp((ProjectSpec) spec);
+    } else if (spec instanceof JoinSpec) {
+      JoinSpec joinSpec = (JoinSpec) spec;
+      if (joinSpec.getLeft().isStream() && joinSpec.getRight().isTable()) {
+        return new StreamRelationJoin(joinSpec);
+      }
+    } else if (spec instanceof StreamScanSpec) {
+      return new StreamScan((StreamScanSpec) spec);
+    } else if (spec instanceof TableScanSpec) {
+      return new TableScan((TableScanSpec) spec);
+    } else if (spec instanceof StreamModifySpec) {
+      StreamModifySpec modifySpec = (StreamModifySpec)spec;
+
+      if(modifySpec.getOperation() == Operation.INSERT) {
+        return new InsertToStreamOp(modifySpec);
+      }
     }
+
     throw new UnsupportedOperationException("Unsupported operator specified: " + spec.getClass().getCanonicalName());
   }
 }
