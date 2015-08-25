@@ -91,7 +91,7 @@ public class Constants {
 
   public static final String SLIDING_WINDOW = "SELECT STREAM rowtime,\n" +
       "  productId,\n" +
-      "  SUM(units) OVER (ORDER BY rowtime RANGE INTERVAL '1' HOUR PRECEDING) unitsLastHour\n" +
+      "  SUM(units) OVER (PARTITION BY productId ORDER BY rowtime RANGE INTERVAL '1' HOUR PRECEDING) unitsLastHour\n" +
       "FROM Orders";
 
   public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE_OPTIMIZED_PLAN_EXPECTED =
