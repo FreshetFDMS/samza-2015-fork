@@ -17,10 +17,33 @@
  * under the License.
  */
 
-package org.apache.samza.sql.window.storage;
+package org.apache.samza.sql.operators.window;
+
 
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This abstract class defines the base class for window retention policies
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class RetentionPolicy {
+  private static final int ONE_GB = 1000000000;
+  private static final long FOUR_HOUR = 3600 * 4;
+
+  private final int maxSize;
+  private final long minTimeSec;
+
+  RetentionPolicy(int retentionSize, long retentionTime) {
+    this.maxSize = retentionSize;
+    this.minTimeSec = retentionTime;
+  }
+
+  public int getSize() {
+    return this.maxSize;
+  }
+
+  public long getTime() {
+    return this.minTimeSec;
+  }
+
+  public static RetentionPolicy getDefaultRetentionPolicy() {
+    return new RetentionPolicy(ONE_GB, FOUR_HOUR);
+  }
 }

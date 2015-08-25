@@ -20,7 +20,30 @@
 package org.apache.samza.sql.window.storage;
 
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This class implements a half-open range class: [start, end)
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class Range<T extends Comparable<T>> {
+  private final T minValue;
+  private final T maxValue;
+
+  private Range(T t1, T t2) {
+    this.minValue = t1;
+    this.maxValue = t2;
+  }
+
+  public static <T extends Comparable<T>> Range<T> between(T t1, T t2) {
+    return new Range<T>(t1, t2);
+  }
+
+  public boolean contains(T t1) {
+    return this.minValue.compareTo(t1) <= 0 && this.maxValue.compareTo(t1) > 0;
+  }
+
+  public T getMin() {
+    return minValue;
+  }
+
+  public T getMax() {
+    return maxValue;
+  }
 }

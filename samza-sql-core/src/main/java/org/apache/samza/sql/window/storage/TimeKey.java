@@ -20,7 +20,27 @@
 package org.apache.samza.sql.window.storage;
 
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This class implements key that is based on time
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class TimeKey extends OrderedStoreKey {
+  private final Long timeNano;
+
+  public TimeKey(long timeNano) {
+    this.timeNano = timeNano;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof TimeKey)) {
+      throw new IllegalArgumentException("Cannot compare TimeKey to " + o.getClass().getName());
+    }
+
+    TimeKey other = (TimeKey) o;
+    return this.timeNano.compareTo(other.timeNano);
+  }
+
+  public long getTimeNano() {
+    return this.timeNano;
+  }
+
 }

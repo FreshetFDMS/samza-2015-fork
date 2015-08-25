@@ -13,54 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.samza.sql.operators.join;
+package org.apache.samza.sql.operators.window2;
 
-import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
-import org.apache.samza.sql.api.operators.OperatorSpec;
-import org.apache.samza.sql.operators.SimpleOperatorImpl;
-import org.apache.samza.task.TaskContext;
+import org.apache.samza.sql.api.operators.Operator;
+import org.apache.samza.sql.api.operators.OperatorCallback;
+import org.apache.samza.sql.window.storage.OrderedStoreKey;
+import org.apache.samza.sql.window.storage.WindowState;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
 
-/**
- * This is a build-in operator that performs stream to relation joining.
- */
-public class StreamRelationJoin extends SimpleOperatorImpl {
+import java.util.List;
 
-  /**
-   * The specification for {@code StreamRelationJoin}
-   */
-  private final JoinSpec spec;
+public class SessionWindowOp extends WindowOp implements Operator {
 
-  /**
-   * Ctor that takes {@link org.apache.samza.sql.operators.join.JoinSpec} object as input.
-   *
-   * @param spec The <code>WindowJoinSpec</code> object
-   */
-  public StreamRelationJoin(JoinSpec spec) {
+  private final SessionWindowSpec spec;
+
+  public SessionWindowOp(SessionWindowSpec spec, OperatorCallback callback) {
+    super(spec, callback);
+    this.spec = spec;
+  }
+
+  public SessionWindowOp(SessionWindowSpec spec) {
     super(spec);
     this.spec = spec;
   }
 
   @Override
+  protected boolean isExpired(WindowState window) {
+    return false;
+  }
+
+  @Override
+  protected boolean isExpired(Tuple tuple) {
+    return false;
+  }
+
+  @Override
+  protected boolean isReplay(Tuple tuple) {
+    return false;
+  }
+
+  @Override
+  protected List<OrderedStoreKey> getWindows(Tuple tuple) {
+    return null;
+  }
+
+  @Override
+  protected void flush() throws Exception {
+
+  }
+
+  @Override
+  protected void refresh() throws Exception {
+
+  }
+
+  @Override
   protected void realRefresh(long timeNano, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    // TODO Auto-generated method stub
+
   }
 
   @Override
   protected void realProcess(Relation rel, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    // TODO Auto-generated method stub
+
   }
 
   @Override
   protected void realProcess(Tuple ituple, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    // TODO Auto-generated method stub
-  }
 
-  @Override
-  public void init(Config config, TaskContext context) throws Exception {
-    // TODO Auto-generated method stub
   }
 }

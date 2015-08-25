@@ -27,6 +27,7 @@ import org.apache.samza.sql.operators.SimpleOperatorSpec;
 /**
  * This class implements the specification class for the build-in {@link org.apache.samza.sql.operators.window.BoundedTimeWindow} operator
  */
+@Deprecated
 public class WindowSpec extends SimpleOperatorSpec implements OperatorSpec {
 
   /**

@@ -19,8 +19,27 @@
 
 package org.apache.samza.sql.window.storage;
 
+import org.apache.samza.system.sql.Offset;
+
+
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This class defines keys that are based on {@link org.apache.samza.system.sql.Offset}
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class OffsetKey extends OrderedStoreKey {
+  private final Offset offset;
+
+  public OffsetKey(Offset offset) {
+    this.offset = offset;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof OffsetKey)) {
+      throw new IllegalArgumentException("Cannot compare OffsetMessageKey with other type of keys. Other key type:"
+          + o.getClass().getName());
+    }
+    OffsetKey other = (OffsetKey) o;
+    return this.offset.compareTo(other.offset);
+  }
+
 }

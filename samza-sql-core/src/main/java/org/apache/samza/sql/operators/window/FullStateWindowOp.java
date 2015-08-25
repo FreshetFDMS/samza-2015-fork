@@ -17,10 +17,30 @@
  * under the License.
  */
 
-package org.apache.samza.sql.window.storage;
+package org.apache.samza.sql.operators.window;
+
+import org.apache.samza.config.Config;
+import org.apache.samza.sql.api.operators.OperatorCallback;
+import org.apache.samza.sql.window.storage.MessageStore;
+import org.apache.samza.task.TaskContext;
+
 
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This abstract class defines the base class for all window operators that include a full {@code messageStore}
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public abstract class FullStateWindowOp extends WindowOp {
+
+  protected MessageStore messageStore;
+
+  FullStateWindowOp(WindowOpSpec spec, OperatorCallback callback) {
+    super(spec, callback);
+    // TODO Auto-generated constructor stub
+  }
+
+  @Override
+  public void init(Config config, TaskContext context) throws Exception {
+    super.init(config, context);
+    this.messageStore = (MessageStore) context.getStore("wnd-msg-" + this.wndId);
+  }
+
 }

@@ -20,7 +20,35 @@
 package org.apache.samza.sql.window.storage;
 
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This class defines a key that has a prefix string
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class PrefixedKey extends OrderedStoreKey {
+  private final String prefix;
+  private final OrderedStoreKey key;
+
+  public PrefixedKey(String prefix, OrderedStoreKey key) {
+    this.prefix = prefix;
+    this.key = key;
+  }
+
+  public OrderedStoreKey getKey() {
+    return this.key;
+  }
+
+  public String getPrefix() {
+    return this.prefix;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof PrefixedKey)) {
+      throw new IllegalArgumentException("Cannot compare PrefixedKey to " + o.getClass().getName());
+    }
+    PrefixedKey other = (PrefixedKey) o;
+    if (this.prefix.compareTo(other.prefix) != 0) {
+      return this.prefix.compareTo(other.prefix);
+    }
+    return this.key.compareTo(key);
+  }
+
 }

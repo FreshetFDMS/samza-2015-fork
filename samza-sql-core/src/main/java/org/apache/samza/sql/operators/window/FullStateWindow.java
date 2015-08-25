@@ -19,26 +19,22 @@
 
 package org.apache.samza.sql.operators.window;
 
-public class WindowState {
-  public String startOffset = null;
-  public String endOffset = null;
-  public boolean isClosed = false;
+import java.util.List;
 
-  public void open(String offset) {
-    this.isClosed = false;
-    this.startOffset = offset;
-  }
+import org.apache.samza.sql.api.data.Tuple;
+import org.apache.samza.sql.window.storage.OrderedStoreKey;
+import org.apache.samza.sql.window.storage.Range;
+import org.apache.samza.storage.kv.Entry;
+import org.apache.samza.storage.kv.KeyValueIterator;
 
-  public void close(String offset) {
-    this.endOffset = offset;
-    this.isClosed = true;
-  }
 
-  public void advanceTo(String offset) {
-    this.endOffset = offset;
-  }
+/**
+ * This interface class defines the methods to access messages in a {@link org.apache.samza.sql.operators.window.WindowOp}
+ */
+public interface FullStateWindow<K extends Comparable<K>> {
 
-  public boolean isClosed() {
-    return this.isClosed;
-  }
+  KeyValueIterator<OrderedStoreKey, Tuple> getMessages(Range<K> timeRange, List<Entry<String, Object>> filterFields);
+
+  KeyValueIterator<OrderedStoreKey, Tuple> getMessages(Range<K> timeRange);
+
 }

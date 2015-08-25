@@ -28,6 +28,7 @@ import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.OperatorCallback;
 import org.apache.samza.sql.operators.SimpleOperatorImpl;
+import org.apache.samza.sql.window.storage.WindowState;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.task.TaskContext;
 import org.apache.samza.task.TaskCoordinator;
@@ -37,6 +38,7 @@ import org.apache.samza.task.sql.SimpleMessageCollector;
  * This class defines an example build-in operator for a fixed size window operator that converts a stream to a relation
  *
  */
+@Deprecated
 public class BoundedTimeWindow extends SimpleOperatorImpl {
 
   /**
