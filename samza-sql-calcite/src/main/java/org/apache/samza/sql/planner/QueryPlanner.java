@@ -27,6 +27,7 @@ import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
+import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttleImpl;
@@ -89,18 +90,10 @@ public class QueryPlanner {
       throw new SamzaException("Query parsing error.", e);
     }
 
-    SqlNode validatedSqlNode;
-
-    try {
-      validatedSqlNode = validateNode(sqlNode);
-    } catch (ValidationException e) {
-      throw new SamzaException("Invalid query.", e);
-    }
-
     // TODO: We need to fix exception handling and also performs the conversion to Samza specific
     // RelNode implementations.
 
-    return validateAndConvert(validatedSqlNode);
+    return validateAndConvert(sqlNode);
   }
 
   private RelNode validateAndConvert(SqlNode sqlNode) throws ValidationException, RelConversionException {

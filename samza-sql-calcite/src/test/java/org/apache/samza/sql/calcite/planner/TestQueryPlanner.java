@@ -65,7 +65,7 @@ public class TestQueryPlanner {
   public static final String SELECT_ALL_FROM_ORDERS_WHERE_QUANTITY_GREATER_THAN_FIVE =
       "select stream * from orders where quantity > 5";
 
-  @Test
+  //@Test
   public void testQueryPlanner() throws IOException, SQLException {
 
     SamzaCalciteConnection connection = new SamzaCalciteConnection(STREAM_MODEL);
