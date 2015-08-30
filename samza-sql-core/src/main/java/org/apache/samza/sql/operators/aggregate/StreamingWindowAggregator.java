@@ -15,6 +15,13 @@
  */
 package org.apache.samza.sql.operators.aggregate;
 
-public class StreamingAggregator {
+import java.util.ArrayList;
+import java.util.List;
 
+public class StreamingWindowAggregator {
+  private final List<Grouping> groupings = new ArrayList<Grouping>();
+
+  public class Grouping {
+
+  }
 }
