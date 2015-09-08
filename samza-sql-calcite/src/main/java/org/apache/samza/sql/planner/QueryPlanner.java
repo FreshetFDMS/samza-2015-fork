@@ -21,13 +21,12 @@ package org.apache.samza.sql.planner;
 
 
 import com.google.common.collect.Lists;
+import org.apache.calcite.adapter.enumerable.EnumerableConvention;
 import org.apache.calcite.config.Lex;
-import org.apache.calcite.plan.Contexts;
-import org.apache.calcite.plan.ConventionTraitDef;
-import org.apache.calcite.plan.RelTraitDef;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.plan.*;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
-import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttleImpl;
@@ -40,16 +39,19 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.rules.ProjectToWindowRule;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.*;
 import org.apache.samza.SamzaException;
+import org.apache.samza.sql.planner.logical.SamzaLogicalConvention;
+import org.apache.samza.sql.planner.logical.SamzaRel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class QueryPlanner {
+
+  public static int LOGICAL_RULES = 0;
 
   private final Planner planner;
   private final HepPlanner hepPlanner;
@@ -68,7 +70,7 @@ public class QueryPlanner {
         .operatorTable(context.getSamzaOperatorTable())  // TODO: How to provide Samza specific operator table
         .traitDefs(traitDefs)
         .context(Contexts.EMPTY_CONTEXT)                // This can be used to store data within the planner session and access them within the rules.
-        .ruleSets(SamzaRuleSets.getBasicRules())
+        .ruleSets(SamzaRuleSets.getRuleSets())
         .costFactory(null)                              // Custom cost factory
         .typeSystem(SamzaRelDataTypeSystem.SAMZA_REL_DATATYPE_SYSTEM)
         .build();
@@ -104,7 +106,13 @@ public class QueryPlanner {
     // Drill also preserve the validated type of the sql query for later use. But current Calcite
     // API doesn't provide a way to get validated type.
 
-    return relNode;
+    return convertToSamzaRel(relNode);
+  }
+
+  private RelNode convertToSamzaRel(RelNode relNode) throws RelConversionException {
+    RelTraitSet traitSet = relNode.getTraitSet();
+    traitSet = traitSet.simplify(); // TODO: Is this the correct thing to do? Why relnode has a composite trait?
+    return planner.transform(LOGICAL_RULES, traitSet.plus(SamzaLogicalConvention.INSTANCE), relNode);
   }
 
   private RelNode convertToRelNode(SqlNode sqlNode) throws RelConversionException {

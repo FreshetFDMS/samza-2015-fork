@@ -19,9 +19,13 @@
 package org.apache.samza.sql.planner;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.calcite.DataContext;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.Linq4j;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelProtoDataType;
@@ -31,7 +35,6 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.api.data.Schema;
 import org.apache.samza.sql.data.avro.AvroSchema;
-import org.apache.samza.sql.planner.logical.LogicalStreamScan;
 import org.apache.samza.sql.schema.AvroSchemaUtils;
 import org.apache.samza.sql.schema.SamzaStreamType;
 import org.apache.samza.sql.schema.Stream;
@@ -60,18 +63,21 @@ public class OrderStreamFactory implements TableFactory<Table> {
       }
     };
 
+    final ImmutableList<Object[]> rows = ImmutableList.of(
+        new Object[]{1, "paint", 10, System.currentTimeMillis()},
+        new Object[]{2, "paper", 5, System.currentTimeMillis()});
+
     return new Stream(EntityName.getStreamName(String.format("%s:%s", "kafka", "orders")),
         streamType) {
 
       @Override
       public Table stream() {
-        return null;
+        return new OrdersTable(protoRowType, rows);
       }
 
       @Override
       public RelNode toRel(RelOptTable.ToRelContext context, RelOptTable relOptTable) {
-        final int fieldCount = relOptTable.getRowType().getFieldCount();
-        return new LogicalStreamScan(context.getCluster(), relOptTable);
+        return new LogicalTableScan(context.getCluster(), relOptTable);
       }
 
       @Override
@@ -86,5 +92,34 @@ public class OrderStreamFactory implements TableFactory<Table> {
             RelCollations.createSingleton(3));
       }
     };
+  }
+
+  public static class OrdersTable implements ScannableTable {
+    private final RelProtoDataType protoRowType;
+    private final ImmutableList<Object[]> rows;
+
+    public OrdersTable(RelProtoDataType protoRowType,
+                       ImmutableList<Object[]> rows) {
+      this.protoRowType = protoRowType;
+      this.rows = rows;
+    }
+
+    public Enumerable<Object[]> scan(DataContext root) {
+      return Linq4j.asEnumerable(rows);
+    }
+
+    public RelDataType getRowType(RelDataTypeFactory typeFactory) {
+      return protoRowType.apply(typeFactory);
+    }
+
+    public Statistic getStatistic() {
+      return Statistics.of(100d,
+          ImmutableList.<ImmutableBitSet>of(),
+          RelCollations.createSingleton(3));
+    }
+
+    public org.apache.calcite.schema.Schema.TableType getJdbcTableType() {
+      return org.apache.calcite.schema.Schema.TableType.STREAM;
+    }
   }
 }

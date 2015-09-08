@@ -20,6 +20,7 @@ package org.apache.samza.sql.planner;
 
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelProtoDataType;
@@ -28,7 +29,6 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.api.data.Schema;
 import org.apache.samza.sql.data.avro.AvroSchema;
-import org.apache.samza.sql.planner.logical.LogicalStreamScan;
 import org.apache.samza.sql.schema.AvroSchemaUtils;
 import org.apache.samza.sql.schema.SamzaStreamType;
 import org.apache.samza.sql.schema.Stream;
@@ -65,7 +65,7 @@ public class ProjectedOrdersStreamFactory implements TableFactory<Table> {
 
       @Override
       public RelNode toRel(RelOptTable.ToRelContext context, RelOptTable relOptTable) {
-        return new LogicalStreamScan(context.getCluster(), relOptTable);
+        return new LogicalTableScan(context.getCluster(), relOptTable);
       }
 
       @Override

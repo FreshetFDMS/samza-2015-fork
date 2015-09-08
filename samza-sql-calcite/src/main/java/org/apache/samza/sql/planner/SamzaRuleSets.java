@@ -1,13 +1,17 @@
 package org.apache.samza.sql.planner;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.volcano.AbstractConverter;
 import org.apache.calcite.rel.rules.*;
 import org.apache.calcite.rel.stream.StreamRules;
 import org.apache.calcite.tools.RuleSet;
+import org.apache.samza.sql.planner.logical.rules.*;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class SamzaRuleSets {
 
@@ -29,22 +33,41 @@ public class SamzaRuleSets {
           ProjectFilterTransposeRule.INSTANCE,
           FilterProjectTransposeRule.INSTANCE,
           FilterJoinRule.FILTER_ON_JOIN,
-          FilterJoinRule.JOIN,
-          AbstractConverter.ExpandConversionRule.INSTANCE,
           AggregateExpandDistinctAggregatesRule.INSTANCE,
           AggregateReduceFunctionsRule.INSTANCE,
           FilterAggregateTransposeRule.INSTANCE,
           JoinCommuteRule.INSTANCE,
-          SemiJoinRule.INSTANCE,
-          AggregateRemoveRule.INSTANCE,
-          UnionToDistinctRule.INSTANCE,
-          ProjectRemoveRule.INSTANCE,
-          AggregateJoinTransposeRule.INSTANCE,
-          CalcRemoveRule.INSTANCE,
-          SortRemoveRule.INSTANCE,
+//          SemiJoinRule.INSTANCE,
+//          AggregateRemoveRule.INSTANCE,
+//          UnionToDistinctRule.INSTANCE,
+//          ProjectRemoveRule.INSTANCE,
+//          AggregateJoinTransposeRule.INSTANCE,
+//          CalcRemoveRule.INSTANCE,
+//          SortRemoveRule.INSTANCE,
           JoinPushThroughJoinRule.RIGHT,
           JoinPushThroughJoinRule.LEFT,
           SortProjectTransposeRule.INSTANCE).build();
+
+  private static final ImmutableSet<RelOptRule> defaultRulesAlt =
+      ImmutableSet.<RelOptRule>builder().add(
+          AggregateStarTableRule.INSTANCE,
+          AggregateStarTableRule.INSTANCE2,
+          TableScanRule.INSTANCE,
+          COMMUTE
+              ? JoinAssociateRule.INSTANCE
+              : ProjectMergeRule.INSTANCE,
+          FilterTableScanRule.INSTANCE,
+          ProjectFilterTransposeRule.INSTANCE,
+          FilterProjectTransposeRule.INSTANCE,
+          FilterJoinRule.FILTER_ON_JOIN,
+          AggregateExpandDistinctAggregatesRule.INSTANCE,
+          AggregateReduceFunctionsRule.INSTANCE,
+          FilterAggregateTransposeRule.INSTANCE,
+          JoinCommuteRule.INSTANCE,
+          JoinPushThroughJoinRule.RIGHT,
+          JoinPushThroughJoinRule.LEFT,
+          SortProjectTransposeRule.INSTANCE
+      ).build();
 
   private static final ImmutableSet<RelOptRule> abstractRelRules =
       ImmutableSet.<RelOptRule>builder().add(
@@ -60,17 +83,48 @@ public class SamzaRuleSets {
           FilterMergeRule.INSTANCE
       ).build();
 
-  public static RuleSet[] getBasicRules() {
+  private static final List<RelOptRule> ENUMERABLE_RULES =
+      ImmutableList.of(
+          EnumerableRules.ENUMERABLE_JOIN_RULE,
+          EnumerableRules.ENUMERABLE_SEMI_JOIN_RULE,
+          EnumerableRules.ENUMERABLE_CORRELATE_RULE,
+          EnumerableRules.ENUMERABLE_PROJECT_RULE,
+          EnumerableRules.ENUMERABLE_FILTER_RULE,
+          EnumerableRules.ENUMERABLE_AGGREGATE_RULE,
+          EnumerableRules.ENUMERABLE_SORT_RULE,
+          EnumerableRules.ENUMERABLE_LIMIT_RULE,
+          EnumerableRules.ENUMERABLE_COLLECT_RULE,
+          EnumerableRules.ENUMERABLE_UNCOLLECT_RULE,
+          EnumerableRules.ENUMERABLE_UNION_RULE,
+          EnumerableRules.ENUMERABLE_INTERSECT_RULE,
+          EnumerableRules.ENUMERABLE_MINUS_RULE,
+          EnumerableRules.ENUMERABLE_TABLE_MODIFICATION_RULE,
+          EnumerableRules.ENUMERABLE_VALUES_RULE,
+          EnumerableRules.ENUMERABLE_WINDOW_RULE,
+          EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE,
+          EnumerableRules.ENUMERABLE_TABLE_FUNCTION_SCAN_RULE);
+
+  private static final ImmutableSet<RelOptRule> calcitetoSamzaConversionRules =
+      ImmutableSet.<RelOptRule>builder().add(
+          AbstractConverter.ExpandConversionRule.INSTANCE,
+          SamzaScanRule.INSTANCE,
+          SamzaFilterRule.INSTANCE,
+          SamzaProjectRule.INSTANCE,
+          SamzaAggregateRule.INSTANCE,
+          SamzaJoinRule.INSTANCE                  // TODO: Window, Modify, Sort, Limit, Union
+          ).build();
+
+  public static RuleSet[] getRuleSets() {
     /*
      * Calcite planner takes an array of RuleSet and we can refer to them by index to activate
      * each rule set for transforming the query plan based on different criteria.
      */
-    final ImmutableSet<RelOptRule> streamRuleSet = ImmutableSet.<RelOptRule>builder()
+    final ImmutableSet<RelOptRule> logicalRules = ImmutableSet.<RelOptRule>builder()
         .addAll(StreamRules.RULES)
+        .addAll(calcitetoSamzaConversionRules)
         .build();
 
-    return new RuleSet[]{new SamzaRuleSet(defaultRules), new SamzaRuleSet(streamRuleSet),
-        new SamzaRuleSet(abstractRelRules)};
+    return new RuleSet[]{new SamzaRuleSet(logicalRules)};
   }
 
   private static class SamzaRuleSet implements RuleSet {
@@ -82,7 +136,7 @@ public class SamzaRuleSets {
 
     @Override
     public Iterator<RelOptRule> iterator() {
-      return null;
+      return rules.iterator();
     }
   }
 }
