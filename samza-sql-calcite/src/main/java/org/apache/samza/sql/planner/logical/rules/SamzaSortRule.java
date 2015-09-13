@@ -21,28 +21,31 @@ package org.apache.samza.sql.planner.logical.rules;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.ConverterRule;
-import org.apache.calcite.rel.core.Window;
-import org.apache.calcite.rel.logical.LogicalWindow;
+import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.logical.LogicalSort;
 import org.apache.samza.sql.planner.logical.SamzaLogicalConvention;
-import org.apache.samza.sql.planner.logical.SamzaWindowRel;
+import org.apache.samza.sql.planner.logical.SamzaSortRel;
 
-public class SamzaWindowRule extends ConverterRule {
-  public static final SamzaWindowRule INSTANCE = new SamzaWindowRule();
+public class SamzaSortRule extends ConverterRule {
+  public static final SamzaSortRule INSTANCE = new SamzaSortRule();
 
-  private SamzaWindowRule() {
-    super(LogicalWindow.class, Convention.NONE, SamzaLogicalConvention.INSTANCE, "SamzaWindowRule");
+  private SamzaSortRule() {
+    super(LogicalSort.class, Convention.NONE, SamzaLogicalConvention.INSTANCE, "SamzaSortRule");
   }
 
   @Override
   public RelNode convert(RelNode rel) {
-    final Window window = (Window) rel;
-    final RelNode input = window.getInput();
+    final Sort sort = (Sort) rel;
 
-    return new SamzaWindowRel(window.getCluster(),
-        window.getTraitSet().replace(SamzaLogicalConvention.INSTANCE),
+    if (sort.offset != null || sort.fetch != null) {
+      return null;
+    }
+
+    final RelNode input = sort.getInput();
+
+    return new SamzaSortRel(sort.getCluster(),
+        sort.getTraitSet().replace(SamzaLogicalConvention.INSTANCE),
         convert(input, input.getTraitSet().replace(SamzaLogicalConvention.INSTANCE)),
-        window.constants,
-        window.getRowType(),
-        window.groups);
+        sort.getCollation(), null, null);
   }
 }

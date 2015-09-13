@@ -22,8 +22,8 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SetOp;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaUnionRelBase;
-import org.apache.samza.sql.planner.physical.PhysicalPlan;
 
 import java.util.List;
 
@@ -34,7 +34,12 @@ public class SamzaUnionRel extends SamzaUnionRelBase implements SamzaRel {
   }
 
   @Override
-  public PhysicalPlan physicalPlan() {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
+
+  }
+
+  @Override
+  public <T> T accept(SamzaRelVisitor<T> visitor) {
     return null;
   }
 

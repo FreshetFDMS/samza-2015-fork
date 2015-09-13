@@ -19,6 +19,8 @@
 package org.apache.samza.sql.planner.logical;
 
 import org.apache.calcite.plan.Convention;
+import org.apache.samza.sql.api.operators.OperatorRouter;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaRelNode;
 import org.apache.samza.sql.planner.physical.PhysicalPlan;
 
@@ -29,5 +31,11 @@ public interface SamzaRel extends SamzaRelNode {
 
   public static final Convention SAMZA_LOGICAL = new Convention.Impl("LOGICAL", SamzaRel.class);
 
-  PhysicalPlan physicalPlan();
+  void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception;
+
+  <T> T accept(SamzaRelVisitor<T> visitor);
+
+  public static interface SamzaRelVisitor<T> {
+    T visit(SamzaRel samzaRel);
+  }
 }

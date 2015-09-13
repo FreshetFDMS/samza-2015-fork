@@ -16,27 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.planner.logical;
+package org.apache.samza.sql.expr;
 
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptTable;
-import org.apache.calcite.plan.RelTraitSet;
-import org.apache.samza.sql.physical.PhysicalPlanCreator;
-import org.apache.samza.sql.planner.common.SamzaTableScanRelBase;
-
-public class SamzaTableScanRel extends SamzaTableScanRelBase implements SamzaRel {
-
-  public SamzaTableScanRel(RelOptCluster cluster, RelTraitSet traitSet, RelOptTable table) {
-    super(cluster, traitSet, table);
-  }
-
-
-  @Override
-  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
-  }
-
-  @Override
-  public <T> T accept(SamzaRelVisitor<T> visitor) {
-    return null;
-  }
+public interface Expression {
+  Object execute(Object[] inputValues);
+  void execute(Object[] inputValues, Object[] results);
 }

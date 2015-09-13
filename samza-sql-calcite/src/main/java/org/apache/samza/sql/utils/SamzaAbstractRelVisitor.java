@@ -16,33 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.planner.logical;
+package org.apache.samza.sql.utils;
 
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.stream.Delta;
-import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.util.ReflectUtil;
+import org.apache.calcite.util.ReflectiveVisitDispatcher;
+import org.apache.calcite.util.ReflectiveVisitor;
 
-import java.util.List;
-
-public class SamzaDeltaRel extends Delta implements SamzaRel {
-  public SamzaDeltaRel(RelOptCluster cluster, RelTraitSet traits, RelNode input) {
-    super(cluster, traits, input);
-  }
-
-  @Override
-  public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    return new SamzaDeltaRel(getCluster(), traitSet, sole(inputs));
-  }
+public abstract class SamzaAbstractRelVisitor extends RelVisitor implements ReflectiveVisitor {
+  private final ReflectiveVisitDispatcher<SamzaAbstractRelVisitor, RelNode> dispatcher =
+      ReflectUtil.createDispatcher(SamzaAbstractRelVisitor.class, RelNode.class);
 
   @Override
-  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
-
+  public void visit(RelNode node, int ordinal, RelNode parent) {
+    node.childrenAccept(this);
+    dispatcher.invokeVisitor(this, node, "visit");
   }
 
-  @Override
-  public <T> T accept(SamzaRelVisitor<T> visitor) {
-    return null;
+  /**
+   * Fallback visit method.
+   * @param r RelNode instance to visit
+   */
+  public void visit(RelNode r){
+
   }
 }

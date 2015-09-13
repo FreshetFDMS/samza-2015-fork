@@ -24,14 +24,15 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.samza.sql.planner.logical.SamzaStream;
+import org.apache.samza.sql.schema.Stream;
 
 public abstract class SamzaStreamScanRelBase extends TableScan implements SamzaRelNode {
 
-  protected final SamzaStream samzaStream;
+  protected final Stream samzaStream;
 
   protected SamzaStreamScanRelBase(RelOptCluster cluster,
                                    RelTraitSet traitSet, RelOptTable table) {
     super(cluster, traitSet, table);
-    this.samzaStream = table.unwrap(SamzaStream.class);
+    this.samzaStream = table.unwrap(Stream.class);
   }
 }

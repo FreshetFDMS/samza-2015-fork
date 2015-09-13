@@ -23,8 +23,8 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaWindowRelBase;
-import org.apache.samza.sql.planner.physical.PhysicalPlan;
 
 import java.util.List;
 
@@ -40,7 +40,12 @@ public class SamzaWindowRel extends SamzaWindowRelBase implements SamzaRel {
   }
 
   @Override
-  public PhysicalPlan physicalPlan() {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
+
+  }
+
+  @Override
+  public <T> T accept(SamzaRelVisitor<T> visitor) {
     return null;
   }
 }

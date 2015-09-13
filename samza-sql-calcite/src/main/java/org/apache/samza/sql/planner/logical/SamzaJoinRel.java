@@ -18,15 +18,14 @@
  */
 package org.apache.samza.sql.planner.logical;
 
-import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaJoinRelBase;
-import org.apache.samza.sql.planner.physical.PhysicalPlan;
 
 import java.util.Set;
 
@@ -44,7 +43,12 @@ public class SamzaJoinRel extends SamzaJoinRelBase implements SamzaRel {
   }
 
   @Override
-  public PhysicalPlan physicalPlan() {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
+
+  }
+
+  @Override
+  public <T> T accept(SamzaRelVisitor<T> visitor) {
     return null;
   }
 }

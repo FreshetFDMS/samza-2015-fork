@@ -16,33 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.planner.logical;
+package org.apache.samza.sql.data;
 
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelTraitSet;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.stream.Delta;
-import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.samza.sql.api.data.Data;
+import org.apache.samza.sql.api.data.Schema;
 
-import java.util.List;
+public class DataUtils {
 
-public class SamzaDeltaRel extends Delta implements SamzaRel {
-  public SamzaDeltaRel(RelOptCluster cluster, RelTraitSet traits, RelNode input) {
-    super(cluster, traits, input);
-  }
-
-  @Override
-  public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    return new SamzaDeltaRel(getCluster(), traitSet, sole(inputs));
-  }
-
-  @Override
-  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
-
-  }
-
-  @Override
-  public <T> T accept(SamzaRelVisitor<T> visitor) {
-    return null;
+  public static boolean isStruct(Data data) {
+    return data.schema().getType() == Schema.Type.STRUCT;
   }
 }

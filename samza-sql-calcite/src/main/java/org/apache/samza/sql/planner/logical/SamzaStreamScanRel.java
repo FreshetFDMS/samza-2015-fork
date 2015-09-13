@@ -21,8 +21,12 @@ package org.apache.samza.sql.planner.logical;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.samza.sql.physical.scan.StreamScan;
+import org.apache.samza.sql.physical.scan.StreamScanSpec;
 import org.apache.samza.sql.planner.common.SamzaStreamScanRelBase;
-import org.apache.samza.sql.planner.physical.PhysicalPlan;
+import org.apache.samza.sql.utils.IdGenerator;
 
 public class SamzaStreamScanRel extends SamzaStreamScanRelBase implements SamzaRel {
 
@@ -31,7 +35,17 @@ public class SamzaStreamScanRel extends SamzaStreamScanRelBase implements SamzaR
   }
 
   @Override
-  public PhysicalPlan physicalPlan() {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
+    physicalPlanCreator.addOperator(
+        new StreamScan(
+            new StreamScanSpec(IdGenerator.generateOperatorId("StreamScan"),
+                samzaStream.getName(),
+                EntityName.getIntermediateStream()),
+            getRowType()));
+  }
+
+  @Override
+  public <T> T accept(SamzaRelVisitor<T> visitor) {
     return null;
   }
 }

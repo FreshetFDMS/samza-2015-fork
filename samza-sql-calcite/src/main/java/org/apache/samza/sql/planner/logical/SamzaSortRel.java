@@ -20,36 +20,25 @@ package org.apache.samza.sql.planner.logical;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.rex.RexNode;
 import org.apache.samza.sql.physical.PhysicalPlanCreator;
-import org.apache.samza.sql.planner.common.SamzaAggregateRelBase;
+import org.apache.samza.sql.planner.common.SamzaSortRelBase;
 
-import java.util.List;
+public class SamzaSortRel extends SamzaSortRelBase implements SamzaRel {
 
-/**
- * Samza aggregation implementation.
- */
-public class SamzaAggregateRel extends SamzaAggregateRelBase implements SamzaRel {
-
-  public SamzaAggregateRel(RelOptCluster cluster, RelTraitSet traits, RelNode child,
-                           boolean indicator, ImmutableBitSet groupSet,
-                           List<ImmutableBitSet> groupSets, List<AggregateCall> aggCalls) {
-    super(cluster, traits, child, indicator, groupSet, groupSets, aggCalls);
+  public SamzaSortRel(RelOptCluster cluster, RelTraitSet traits, RelNode child, RelCollation collation) {
+    super(cluster, traits, child, collation);
   }
 
-  @Override
-  public Aggregate copy(RelTraitSet traitSet, RelNode input, boolean indicator,
-                        ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
-                        List<AggregateCall> aggCalls) {
-    return new SamzaAggregateRel(getCluster(), traitSet, input, indicator, groupSet, groupSets,
-        aggCalls);
+  public SamzaSortRel(RelOptCluster cluster, RelTraitSet traits, RelNode child, RelCollation collation, RexNode offset, RexNode fetch) {
+    super(cluster, traits, child, collation, offset, fetch);
   }
 
   @Override
   public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
+
   }
 
   @Override

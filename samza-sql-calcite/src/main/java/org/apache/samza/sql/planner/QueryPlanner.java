@@ -43,6 +43,8 @@ import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.*;
 import org.apache.samza.SamzaException;
+import org.apache.samza.sql.api.operators.OperatorRouter;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.logical.SamzaLogicalConvention;
 import org.apache.samza.sql.planner.logical.SamzaRel;
 
@@ -83,6 +85,15 @@ public class QueryPlanner {
     this.hepPlanner.addRule(ProjectToWindowRule.PROJECT);
   }
 
+  public OperatorRouter getPhysicalPlan(SamzaRel relNode) throws Exception {
+    PhysicalPlanCreator physicalPlanCreator =
+        PhysicalPlanCreator.create(relNode.getCluster().getTypeFactory());
+
+    relNode.physicalPlan(physicalPlanCreator);
+
+    return physicalPlanCreator.getRouter();
+  }
+
   public RelNode getPlan(String query) throws ValidationException, RelConversionException {
     SqlNode sqlNode;
 
@@ -102,6 +113,8 @@ public class QueryPlanner {
     SqlNode validated = validateNode(sqlNode);
     RelNode relNode = convertToRelNode(validated);
 
+    System.out.println(RelOptUtil.toString(relNode));
+
     // Drill does pre-processing too. We can do pre processing here if needed.
     // Drill also preserve the validated type of the sql query for later use. But current Calcite
     // API doesn't provide a way to get validated type.
@@ -118,7 +131,7 @@ public class QueryPlanner {
   private RelNode convertToRelNode(SqlNode sqlNode) throws RelConversionException {
     final RelNode convertedNode = planner.convert(sqlNode);
 
-    // Below code is from Drill. But exactly not sure what they are doing with metadata provider.
+    // Below code is fromData Drill. But exactly not sure what they are doing with metadata provider.
     // In out old code we could do the same window planning without messing with metadata provider.
     final RelMetadataProvider provider = convertedNode.getCluster().getMetadataProvider();
 
@@ -147,7 +160,7 @@ public class QueryPlanner {
     return validatedSqlNode;
   }
 
-  // TODO: This is from Drill. Not sure what it does.
+  // TODO: This is fromData Drill. Not sure what it does.
   public static class MetaDataProviderModifier extends RelShuttleImpl {
     private final RelMetadataProvider metadataProvider;
 

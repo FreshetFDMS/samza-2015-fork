@@ -1,8 +1,6 @@
 package org.apache.samza.sql.planner;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.volcano.AbstractConverter;
 import org.apache.calcite.rel.rules.*;
@@ -11,7 +9,6 @@ import org.apache.calcite.tools.RuleSet;
 import org.apache.samza.sql.planner.logical.rules.*;
 
 import java.util.Iterator;
-import java.util.List;
 
 public class SamzaRuleSets {
 
@@ -20,7 +17,7 @@ public class SamzaRuleSets {
           System.getProperties().getProperty("calcite.enable.join.commute"));
 
   /**
-   * Default set of query planner rules use by Samza including rules from
+   * Default set of query planner rules use by Samza including rules fromData
    * VolcanoPlanner#registerAbstractRelationalRules.
    * <p/>
    * TODO: Check whether order of the rules make a difference.
@@ -83,36 +80,19 @@ public class SamzaRuleSets {
           FilterMergeRule.INSTANCE
       ).build();
 
-  private static final List<RelOptRule> ENUMERABLE_RULES =
-      ImmutableList.of(
-          EnumerableRules.ENUMERABLE_JOIN_RULE,
-          EnumerableRules.ENUMERABLE_SEMI_JOIN_RULE,
-          EnumerableRules.ENUMERABLE_CORRELATE_RULE,
-          EnumerableRules.ENUMERABLE_PROJECT_RULE,
-          EnumerableRules.ENUMERABLE_FILTER_RULE,
-          EnumerableRules.ENUMERABLE_AGGREGATE_RULE,
-          EnumerableRules.ENUMERABLE_SORT_RULE,
-          EnumerableRules.ENUMERABLE_LIMIT_RULE,
-          EnumerableRules.ENUMERABLE_COLLECT_RULE,
-          EnumerableRules.ENUMERABLE_UNCOLLECT_RULE,
-          EnumerableRules.ENUMERABLE_UNION_RULE,
-          EnumerableRules.ENUMERABLE_INTERSECT_RULE,
-          EnumerableRules.ENUMERABLE_MINUS_RULE,
-          EnumerableRules.ENUMERABLE_TABLE_MODIFICATION_RULE,
-          EnumerableRules.ENUMERABLE_VALUES_RULE,
-          EnumerableRules.ENUMERABLE_WINDOW_RULE,
-          EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE,
-          EnumerableRules.ENUMERABLE_TABLE_FUNCTION_SCAN_RULE);
-
-  private static final ImmutableSet<RelOptRule> calcitetoSamzaConversionRules =
+  private static final ImmutableSet<RelOptRule> calciteToSamzaConversionRules =
       ImmutableSet.<RelOptRule>builder().add(
+          SortRemoveRule.INSTANCE,
           AbstractConverter.ExpandConversionRule.INSTANCE,
+          SamzaDeltaRule.INSTANCE,
           SamzaScanRule.INSTANCE,
           SamzaFilterRule.INSTANCE,
           SamzaProjectRule.INSTANCE,
+          SamzaSortRule.INSTANCE,
+          SamzaWindowRule.INSTANCE,
           SamzaAggregateRule.INSTANCE,
           SamzaJoinRule.INSTANCE                  // TODO: Window, Modify, Sort, Limit, Union
-          ).build();
+      ).build();
 
   public static RuleSet[] getRuleSets() {
     /*
@@ -121,7 +101,7 @@ public class SamzaRuleSets {
      */
     final ImmutableSet<RelOptRule> logicalRules = ImmutableSet.<RelOptRule>builder()
         .addAll(StreamRules.RULES)
-        .addAll(calcitetoSamzaConversionRules)
+        .addAll(calciteToSamzaConversionRules)
         .build();
 
     return new RuleSet[]{new SamzaRuleSet(logicalRules)};

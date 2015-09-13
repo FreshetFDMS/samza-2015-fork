@@ -18,15 +18,18 @@
  */
 package org.apache.samza.sql.planner.logical;
 
-import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.operators.OperatorSpec;
+import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.samza.sql.physical.project.ProjectSpec;
 import org.apache.samza.sql.planner.common.SamzaProjectRelBase;
-import org.apache.samza.sql.planner.physical.PhysicalPlan;
+import org.apache.samza.sql.utils.IdGenerator;
 
 import java.util.List;
 
@@ -42,7 +45,23 @@ public class SamzaProjectRel extends SamzaProjectRelBase implements SamzaRel {
   }
 
   @Override
-  public PhysicalPlan physicalPlan() {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
+    ((SamzaRel)getInput()).physicalPlan(physicalPlanCreator);
+    OperatorSpec inputSpec = physicalPlanCreator.pop();
+
+    physicalPlanCreator.addOperator(
+        new org.apache.samza.sql.physical.project.Project(
+            new ProjectSpec(IdGenerator.generateOperatorId("Project"),
+                sole(inputSpec.getOutputNames()),
+                EntityName.getIntermediateStream(),
+                physicalPlanCreator.compile(getInputs(), getProjects())),
+            getRowType()
+        )
+    );
+  }
+
+  @Override
+  public <T> T accept(SamzaRelVisitor<T> visitor) {
     return null;
   }
 }
