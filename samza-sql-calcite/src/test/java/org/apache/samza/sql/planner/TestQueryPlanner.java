@@ -80,10 +80,10 @@ public class TestQueryPlanner {
       + "}";
 
   public static final String SIMPLE_PROJECT =
-      "select stream productId, units fromData orders";
+      "select stream productId, units from orders";
 
   public static final String SIMPLE_FILTER =
-      "select stream * fromData orders where units > 5";
+      "select stream * from orders where units > 5";
 
   public static final String SIMPLE_WINDOW_AGGREGATE =
       "SELECT STREAM rowtime,\n" +

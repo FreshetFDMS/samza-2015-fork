@@ -280,6 +280,7 @@ project(":samza-sql-core_$scalaVersion") {
 
 project(":samza-sql-calcite_$scalaVersion") {
   apply plugin: 'java'
+  apply plugin: 'scala'
 
   dependencies {
     compile project(":samza-sql-core_$scalaVersion")

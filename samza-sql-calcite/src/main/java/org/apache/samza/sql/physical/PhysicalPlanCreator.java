@@ -46,28 +46,62 @@ public class PhysicalPlanCreator {
     this.expressionCompiler = new RexToJavaCompiler(rexBuilder);
   }
 
+  /**
+   * Create an instance of {@link PhysicalPlanCreator}
+   *
+   * @param relDataTypeFactory The {@link RelDataTypeFactory} instance
+   * @return an instance of {@link PhysicalPlanCreator}
+   */
   public static final PhysicalPlanCreator create(RelDataTypeFactory relDataTypeFactory){
     return new PhysicalPlanCreator(new SimpleRouter(), new RexBuilder(relDataTypeFactory));
   }
 
+  /**
+   * Add a new operator instance to physical plan.
+   *
+   * @param operator The {@link SimpleOperator} instance
+   * @throws Exception
+   */
   public void addOperator(SimpleOperator operator) throws Exception {
     // Push the operator spec to stack to use it with operators in upstream
     push(operator.getSpec());
     router.addOperator(operator);
   }
 
+  /**
+   * Get operator router representing this physical plan.
+   *
+   * @return {@link OperatorRouter} instnace
+   */
   public OperatorRouter getRouter() {
     return router;
   }
 
+  /**
+   * Returns the last inserted item to {@link OperatorSpec} stack.
+   *
+   * @return last inserted {@link OperatorSpec} instance
+   */
   public OperatorSpec pop(){
     return operatorStack.pop();
   }
 
-  public void push(OperatorSpec spec) {
+  /**
+   * Insert an {@link OperatorSpec} instance to the stack
+   * @param spec The {@link OperatorSpec} instance
+   */
+  protected void push(OperatorSpec spec) {
     operatorStack.push(spec);
   }
 
+  /**
+   * Generate an implementation of {@link Expression} representing set of relational expressions,
+   * compile it and creates an instance of the implementaiton.
+   *
+   * @param inputs Inputs to the relational expressions
+   * @param expressions relational expressions
+   * @return instance of generated expression implementation
+   */
   public Expression compile(List<RelNode> inputs, List<RexNode> expressions) {
     return expressionCompiler.compile(inputs, expressions);
   }
