@@ -127,6 +127,7 @@ public class TestQueryPlanner {
 
     Assert.assertNotNull(plan);
 
+    // TODO: Add assert to check the generated query plan
     System.out.println(RelOptUtil.toString(plan));
   }
 
@@ -137,6 +138,7 @@ public class TestQueryPlanner {
 
     Assert.assertNotNull(plan);
 
+    // TODO: Add assert to check the generated query plan
     System.out.println(RelOptUtil.toString(plan));
   }
 
@@ -147,6 +149,7 @@ public class TestQueryPlanner {
 
     Assert.assertNotNull(plan);
 
+    // TODO: Add assert to check the generated query plan
     System.out.println(RelOptUtil.toString(plan));
   }
 
