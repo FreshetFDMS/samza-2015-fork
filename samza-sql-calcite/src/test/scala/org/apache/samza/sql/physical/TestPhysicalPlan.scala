@@ -22,6 +22,7 @@ package org.apache.samza.sql.physical
 import java.util.UUID
 
 import org.apache.samza.Partition
+import org.apache.samza.config.Config
 import org.apache.samza.system._
 import org.apache.samza.task._
 import org.junit.Assert._
