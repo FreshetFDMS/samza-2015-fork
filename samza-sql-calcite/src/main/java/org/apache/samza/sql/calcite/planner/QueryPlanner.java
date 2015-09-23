@@ -161,7 +161,7 @@ public class QueryPlanner {
 
     /* TODO: Add query optimization. */
 
-    return preparingStmt.getSqlToRelConverter(validator, catalogReader).convertQuery(validatedSqlNode, false, true);
+    return preparingStmt.getSqlToRelConverter(validator, catalogReader).convertQuery(validatedSqlNode, false, true).rel;
   }
 
   /**

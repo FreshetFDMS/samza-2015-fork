@@ -27,6 +27,7 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
@@ -66,12 +67,12 @@ public class SamzaQueryPreparingStatement extends Prepare implements RelOptTable
   }
 
   @Override
-  protected PreparedResult createPreparedExplanation(RelDataType resultType, RelDataType parameterRowType, RelNode rootRel, boolean explainAsXml, SqlExplainLevel detailLevel) {
+  protected PreparedResult createPreparedExplanation(RelDataType resultType, RelDataType parameterRowType, RelRoot root, boolean explainAsXml, SqlExplainLevel detailLevel) {
     return null;
   }
 
   @Override
-  protected PreparedResult implement(RelDataType rowType, RelNode rootRel, SqlKind sqlKind) {
+  protected PreparedResult implement(RelRoot root) {
     return null;
   }
 
@@ -104,7 +105,7 @@ public class SamzaQueryPreparingStatement extends Prepare implements RelOptTable
   }
 
   @Override
-  public RelNode expandView(RelDataType rowType, String queryString, List<String> schemaPath) {
+  public RelRoot expandView(RelDataType rowType, String queryString, List<String> schemaPath) {
     // TODO: Implement custom view expansions
     return super.expandView(rowType, queryString, schemaPath);
   }

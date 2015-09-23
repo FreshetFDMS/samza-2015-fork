@@ -18,13 +18,20 @@
  */
 package org.apache.samza.sql.planner.logical;
 
+import com.google.common.collect.Lists;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.stream.Delta;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.samza.sql.physical.filter.FilterSpec;
+import org.apache.samza.sql.physical.insert.InsertToStreamSpec;
+import org.apache.samza.sql.utils.IdGenerator;
 
 import java.util.List;
+import java.util.UUID;
 
 public class SamzaDeltaRel extends Delta implements SamzaRel {
   public SamzaDeltaRel(RelOptCluster cluster, RelTraitSet traits, RelNode input) {
@@ -37,8 +44,16 @@ public class SamzaDeltaRel extends Delta implements SamzaRel {
   }
 
   @Override
-  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
-
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
+    ((SamzaRel)getInput()).physicalPlan(physicalPlanCreator);
+    OperatorSpec inputOpSpec = physicalPlanCreator.pop();
+    physicalPlanCreator.addOperator(
+            new org.apache.samza.sql.physical.insert.InsertToStream(
+                    new InsertToStreamSpec(IdGenerator.generateOperatorId("InsertToStream"),
+                            sole(inputOpSpec.getOutputNames()),
+                            EntityName.getStreamName(String.format("%s:%s", "kafka", UUID.randomUUID().toString()))),
+                    getRowType()
+            ));
   }
 
   @Override

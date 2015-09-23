@@ -26,7 +26,7 @@ import org.apache.samza.sql.api.data.Schema;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.data.DataUtils;
 import org.apache.samza.sql.data.IntermediateMessageTuple;
-import org.apache.samza.sql.data.SamzaToCalciteDataConverter;
+import org.apache.samza.sql.data.TupleConverter;
 import org.apache.samza.sql.operators.SimpleOperatorImpl;
 import org.apache.samza.task.TaskContext;
 import org.apache.samza.task.TaskCoordinator;
@@ -58,12 +58,12 @@ public class StreamScan extends SimpleOperatorImpl {
 
   @Override
   protected void realProcess(Tuple tuple, SimpleMessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    if(DataUtils.isStruct(tuple.getMessage())) {
+    if(!DataUtils.isStruct(tuple.getMessage())) {
       // TODO: Log to error topic
       throw new SamzaException(String.format("Unsupported tuple type: %s expected: %s", tuple.getMessage().schema().getType(), Schema.Type.STRUCT));
     }
 
-    collector.send(IntermediateMessageTuple.fromData(SamzaToCalciteDataConverter.convert(tuple.getMessage(), type),
+    collector.send(IntermediateMessageTuple.fromData(TupleConverter.samzaDataToObjectArray(tuple.getMessage(), type),
         tuple.getKey(), tuple.getCreateTimeNano(), tuple.getOffset(), false, spec.getOutputName()));
   }
 

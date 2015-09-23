@@ -19,16 +19,29 @@
 
 package org.apache.samza.sql.physical
 
+import java.text.SimpleDateFormat
 import java.util.UUID
 
+import org.apache.avro.Schema.Parser
+import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.samza.Partition
-import org.apache.samza.config.Config
+import org.apache.samza.sql.data.avro.{AvroData, AvroSchema}
+import org.apache.samza.sql.planner.TestQueryPlanner
+import org.apache.samza.sql.test.MockSqlTask
 import org.apache.samza.system._
 import org.apache.samza.task._
 import org.junit.Assert._
 import org.junit.Test
 
+import scala.io.Source
+
 class TestPhysicalPlan {
+
+  val ordersAvroSchemaSource = Source.fromURL(getClass.getResource("/orders.avsc"))
+  val ordersAvroSchemaStr = try ordersAvroSchemaSource.mkString finally ordersAvroSchemaSource.close()
+  val ordersAvroSchema = new Parser().parse(ordersAvroSchemaStr)
+  val filterOrders = TestQueryPlanner.SIMPLE_FILTER
+  val calciteModel = TestQueryPlanner.STREAM_MODEL
 
   @Test
   def testQueryExecutor() {
@@ -51,5 +64,52 @@ class TestPhysicalPlan {
     assertTrue(lastProcessedOffset.isDefined)
     assertEquals("1", lastProcessedOffset.get)
     assertEquals(2, taskExecutor.topicContent("output-stream").size)
+  }
+
+  @Test
+  def testSimpleFilter() {
+    val filterTask = new MockSqlTask(calciteModel, filterOrders)
+    val partition = new Partition(0)
+    val systemStream = new SystemStream("kafka", "orders")
+    val systemStreamPartition = new SystemStreamPartition(systemStream, partition)
+    val filterExecutor = new InMemoryStreamingTaskExecutor(filterTask, "sql-task", systemStream, systemStreamPartition)
+    val orders = loadOrderRecords()
+
+    orders.indices.foreach((i: Int) => {
+      filterExecutor.send(new IncomingMessageEnvelope(systemStreamPartition, i.toString, null, orders(i)))
+    })
+
+    assertEquals(filterExecutor.outputTopics.size, 1)
+
+    filterExecutor.outputTopics.foreach((topic: String) => {
+      filterExecutor.topicContent(topic).foreach((e) => {
+        e match {
+          case eAvro: AvroData => {
+            println("orderId" + eAvro.getFieldData("orderId").value())
+          }
+          case _ => println("Unknown type")
+        }
+      })
+    })
+  }
+
+  private def loadOrderRecords(): List[AvroData] = {
+    val testDataSource = Source.fromURL(getClass.getResource("/test-data.csv"))
+    val recordItr = testDataSource.getLines().drop(1).map(_.split(","))
+
+    val avroRecordItr = recordItr.map((r: Array[String]) => {
+      val recordBuilder = new GenericRecordBuilder(ordersAvroSchema)
+      val timeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+      val eventTime = timeFormat.parse(r(0))
+      recordBuilder.set("rowtime", eventTime.getTime)
+      recordBuilder.set("productId", r(1))
+      recordBuilder.set("orderId", r(2).toInt)
+      recordBuilder.set("units", r(3).toInt)
+
+      val record = recordBuilder.build()
+      AvroData.getStruct(AvroSchema.getSchema(ordersAvroSchema), record)
+    })
+
+    avroRecordItr.toList
   }
 }

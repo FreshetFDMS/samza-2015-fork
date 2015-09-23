@@ -52,7 +52,7 @@ public class Filter extends SimpleOperatorImpl {
     }
 
     if ((Boolean) spec.getFilter().execute(((IntermediateMessageTuple)ituple).getContent())) {
-      collector.send(ituple);
+      collector.send(IntermediateMessageTuple.fromTuple((IntermediateMessageTuple)ituple, spec.getOutputName()));
     }
   }
 

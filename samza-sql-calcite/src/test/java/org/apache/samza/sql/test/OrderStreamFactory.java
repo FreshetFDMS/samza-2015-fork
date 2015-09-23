@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.planner;
+package org.apache.samza.sql.test;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.DataContext;
@@ -48,7 +48,7 @@ public class OrderStreamFactory implements TableFactory<Table> {
     final RelProtoDataType protoRowType = new RelProtoDataType() {
       public RelDataType apply(RelDataTypeFactory a0) {
         return a0.builder()
-            .add("id", SqlTypeName.INTEGER)
+            .add("orderId", SqlTypeName.INTEGER)
             .add("productId", SqlTypeName.VARCHAR, 10)
             .add("units", SqlTypeName.INTEGER)
             .add("rowtime", SqlTypeName.TIMESTAMP)

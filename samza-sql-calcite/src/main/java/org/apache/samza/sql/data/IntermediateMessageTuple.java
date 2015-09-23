@@ -94,4 +94,8 @@ public class IntermediateMessageTuple implements Tuple {
                                                         EntityName streamName) {
     return new IntermediateMessageTuple(tuple, key, creationTime, offset, delete, streamName);
   }
+
+  public static final IntermediateMessageTuple fromTuple(IntermediateMessageTuple tuple, EntityName streamName) {
+    return new IntermediateMessageTuple(tuple.message, tuple.key, tuple.creationTime, tuple.offset, tuple.delete, streamName);
+  }
 }

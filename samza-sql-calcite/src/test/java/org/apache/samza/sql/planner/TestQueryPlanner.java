@@ -19,9 +19,9 @@
 package org.apache.samza.sql.planner;
 
 import junit.framework.Assert;
+import org.apache.avro.Schema;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.SchemaPlus;
@@ -30,11 +30,12 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
-import org.apache.calcite.util.ReflectUtil;
-import org.apache.calcite.util.ReflectiveVisitDispatcher;
-import org.apache.calcite.util.ReflectiveVisitor;
+import org.apache.samza.sql.api.operators.OperatorRouter;
 import org.apache.samza.sql.expr.RexToJavaCompiler;
+import org.apache.samza.sql.planner.logical.SamzaRel;
 import org.apache.samza.sql.schema.CalciteModelProcessor;
+import org.apache.samza.sql.test.OrderStreamFactory;
+import org.apache.samza.sql.test.ProjectedOrdersStreamFactory;
 import org.apache.samza.sql.utils.SamzaAbstractRelVisitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,6 +93,27 @@ public class TestQueryPlanner {
           "  SUM(units + 20) OVER (PARTITION BY productId ORDER BY rowtime RANGE INTERVAL '1' HOUR PRECEDING) unitsLastHour\n" +
           "FROM Orders";
 
+  public static final String ORDERS_AVRO_SCHEMA = "{\n" +
+          "  \"type\": \"record\",\n" +
+          "  \"name\": \"orders_schema\",\n" +
+          "  \"namespace\": \"org.apache.samza.sql.test\",\n" +
+          "  \"fields\": [{\n" +
+          "    \"name\": \"rowtime\",\n" +
+          "    \"type\": \"long\"\n" +
+          "  }, {\n" +
+          "    \"name\": \"productId\",\n" +
+          "    \"type\": \"string\"\n" +
+          "  }, {\n" +
+          "    \"name\": \"units\",\n" +
+          "    \"type\": \"int\"\n" +
+          "  }, {\n" +
+          "    \"name\": \"orderId\",\n" +
+          "    \"type\": \"int\"\n" +
+          "  }]\n" +
+          "}";
+
+  private final Schema ordersSchema = new Schema.Parser().parse(ORDERS_AVRO_SCHEMA);
+
   private QueryContext queryContext;
 
   private class TestQueryContext implements QueryContext {
@@ -128,7 +150,6 @@ public class TestQueryPlanner {
     Assert.assertNotNull(plan);
 
     // TODO: Add assert to check the generated query plan
-    System.out.println(RelOptUtil.toString(plan));
   }
 
   @Test
@@ -139,7 +160,6 @@ public class TestQueryPlanner {
     Assert.assertNotNull(plan);
 
     // TODO: Add assert to check the generated query plan
-    System.out.println(RelOptUtil.toString(plan));
   }
 
   @Test
@@ -150,7 +170,6 @@ public class TestQueryPlanner {
     Assert.assertNotNull(plan);
 
     // TODO: Add assert to check the generated query plan
-    System.out.println(RelOptUtil.toString(plan));
   }
 
   @Test

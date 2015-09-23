@@ -16,26 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.planner;
 
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.sql.SqlOperatorTable;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+package org.apache.samza.sql.physical.insert;
 
-public class MockQueryContext implements QueryContext {
-  private final SchemaPlus defaultSchema;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.operators.SimpleOperatorSpec;
 
-  public MockQueryContext(SchemaPlus defaultSchema) {
-    this.defaultSchema = defaultSchema;
-  }
-
-  @Override
-  public SchemaPlus getDefaultSchema() {
-    return defaultSchema;
-  }
-
-  @Override
-  public SqlOperatorTable getSamzaOperatorTable() {
-    return SqlStdOperatorTable.instance();
-  }
+public class InsertToStreamSpec extends SimpleOperatorSpec {
+    public InsertToStreamSpec(String id, EntityName input, EntityName output) {
+        super(id, input, output);
+    }
 }
