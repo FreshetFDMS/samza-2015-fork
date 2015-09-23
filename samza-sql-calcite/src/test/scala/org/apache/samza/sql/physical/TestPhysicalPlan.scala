@@ -80,17 +80,7 @@ class TestPhysicalPlan {
     })
 
     assertEquals(filterExecutor.outputTopics.size, 1)
-
-    filterExecutor.outputTopics.foreach((topic: String) => {
-      filterExecutor.topicContent(topic).foreach((e) => {
-        e match {
-          case eAvro: AvroData => {
-            println("orderId" + eAvro.getFieldData("orderId").value())
-          }
-          case _ => println("Unknown type")
-        }
-      })
-    })
+    assertEquals(filterExecutor.topicContent(filterExecutor.outputTopics.head).size, 3)
   }
 
   private def loadOrderRecords(): List[AvroData] = {
