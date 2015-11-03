@@ -18,14 +18,19 @@
  */
 package org.apache.samza.sql.planner.logical;
 
+import org.apache.calcite.adapter.enumerable.RexImpTable;
+import org.apache.calcite.adapter.enumerable.RexToLixTranslator;
+import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexWindowBound;
 import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaWindowRelBase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SamzaWindowRel extends SamzaWindowRelBase implements SamzaRel {
@@ -42,6 +47,17 @@ public class SamzaWindowRel extends SamzaWindowRelBase implements SamzaRel {
   @Override
   public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
 
+    final List<Expression> translatedConstants =
+        new ArrayList<Expression>(constants.size());
+    for (RexLiteral constant : constants) {
+      translatedConstants.add(
+          RexToLixTranslator.translateLiteral(constant, constant.getType(),
+              physicalPlanCreator.getTypeFactory(), RexImpTable.NullAs.NULL));
+    }
+
+    for (Group group : groups) {
+
+    }
   }
 
   @Override

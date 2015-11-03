@@ -19,5 +19,24 @@
 
 package org.apache.samza.sql.physical.aggregate;
 
-public class StreamingAggImplementor {
+
+import org.apache.calcite.adapter.enumerable.AggImplementor;
+import org.apache.calcite.linq4j.tree.Expression;
+
+import java.util.List;
+
+public interface StreamingAggImplementor extends AggImplementor {
+
+  /**
+   * Updates intermediate values to account for the value removed from the window.
+   * {@link StreamingAggSubtractContext#accumulator()} should be used to reference
+   * the state variables.
+   *
+   * @param info Streaming aggregate context
+   * @param sub  Streaming aggregate subtract context
+   */
+  Expression implementSubtract(StreamingAggContext info, StreamingAggSubtractContext sub);
+
+  Expression implementStreamingAdd(StreamingAggContext info, StreamingAggAddContext add);
+
 }

@@ -47,6 +47,8 @@ public class SamzaDeltaRel extends Delta implements SamzaRel {
   public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
     ((SamzaRel)getInput()).physicalPlan(physicalPlanCreator);
     OperatorSpec inputOpSpec = physicalPlanCreator.pop();
+
+    // Note: I decided to replace delta with insert-to-stream in the physical plan. Still not sure whether this is the correct approach.
     physicalPlanCreator.addOperator(
             new org.apache.samza.sql.physical.insert.InsertToStream(
                     new InsertToStreamSpec(IdGenerator.generateOperatorId("InsertToStream"),

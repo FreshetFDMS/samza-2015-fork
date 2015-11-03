@@ -19,33 +19,30 @@
 
 package org.apache.samza.sql.physical.window;
 
+import org.apache.samza.sql.window.storage.TimeAndOffsetKey;
 import org.apache.samza.system.sql.Offset;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * We have to use this to keep the sate because there can be multiple messages with same timestamp
+ */
 public class TimeBasedSlidingWindowAggregatorState {
-
   /**
-   * The lower bound of the window in nano seconds (inclusive)
+   * Multiple tuples can have same timestamp.
    */
-  private final long lowerBoundNano;
+  private List<TimeAndOffsetKey> tuples = new ArrayList<TimeAndOffsetKey>();
 
-  /**
-   * The starting offset of the window (inclusive)
-   */
-  private final Offset lowerBoundOffset;
+  public TimeBasedSlidingWindowAggregatorState(Long tupleTimestamp, Offset tupleOffset) {
+    tuples.add(new TimeAndOffsetKey(tupleTimestamp, tupleOffset));
+  }
 
-  /**
-   * The upper bound of the window in nano seconds
-   */
-  private final long upperBoundNano;
+  public void addTuple(long timestamp, Offset offset) {
+    tuples.add(new TimeAndOffsetKey(timestamp, offset));
+  }
 
-  /**
-   * Timestamp of the last seen tuple included in this window
-   */
-  private long lastSeenTimestampNano;
-
-  public TimeBasedSlidingWindowAggregatorState(long lowerBoundNano, Offset lowerBoundOffset, long upperBoundNano) {
-    this.lowerBoundNano = lowerBoundNano;
-    this.lowerBoundOffset = lowerBoundOffset;
-    this.upperBoundNano = upperBoundNano;
+  public List<TimeAndOffsetKey> getTuples() {
+    return tuples;
   }
 }

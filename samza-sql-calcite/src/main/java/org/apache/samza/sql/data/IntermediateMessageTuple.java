@@ -30,6 +30,7 @@ public class IntermediateMessageTuple implements Tuple {
    */
   private final Object[] message;
 
+  // TODO: This should be receive time
   private final long creationTime;
 
   private final Offset offset;
@@ -84,6 +85,10 @@ public class IntermediateMessageTuple implements Tuple {
     return creationTime;
   }
 
+  public long getCreationTimeMillis() {
+    return creationTime / 1000000;
+  }
+
   @Override
   public Offset getOffset() {
     return offset;
@@ -97,5 +102,9 @@ public class IntermediateMessageTuple implements Tuple {
 
   public static final IntermediateMessageTuple fromTuple(IntermediateMessageTuple tuple, EntityName streamName) {
     return new IntermediateMessageTuple(tuple.message, tuple.key, tuple.creationTime, tuple.offset, tuple.delete, streamName);
+  }
+
+  public static final IntermediateMessageTuple fromTupleAndContent(IntermediateMessageTuple tuple, Object[] content, EntityName streamName) {
+    return new IntermediateMessageTuple(content, tuple.key, tuple.creationTime, tuple.offset, tuple.delete, streamName);
   }
 }

@@ -19,5 +19,7 @@
 
 package org.apache.samza.sql.physical.aggregate;
 
-public interface StreamingAggAddContext {
+import org.apache.calcite.adapter.enumerable.AggAddContext;
+
+public interface StreamingAggAddContext extends AggAddContext {
 }

@@ -20,9 +20,12 @@ package org.apache.samza.sql.planner;
 
 import junit.framework.Assert;
 import org.apache.avro.Schema;
+import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.linq4j.function.Function2;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.Window;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlOperatorTable;
@@ -32,7 +35,9 @@ import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
 import org.apache.samza.sql.api.operators.OperatorRouter;
 import org.apache.samza.sql.expr.RexToJavaCompiler;
+import org.apache.samza.sql.physical.window.codegen.WindowOperatorGenerator;
 import org.apache.samza.sql.planner.logical.SamzaRel;
+import org.apache.samza.sql.planner.logical.SamzaWindowRel;
 import org.apache.samza.sql.schema.CalciteModelProcessor;
 import org.apache.samza.sql.test.OrderStreamFactory;
 import org.apache.samza.sql.test.ProjectedOrdersStreamFactory;
@@ -178,6 +183,16 @@ public class TestQueryPlanner {
     RelNode plan = planner.getPlan(SIMPLE_WINDOW_AGGREGATE);
 
     new ProjectVisitor(plan.getCluster().getRexBuilder()).visit(plan, 0, null);
+  }
+
+  @Test
+  public void testCodeGenerator() throws ValidationException, RelConversionException {
+    QueryPlanner planner = new QueryPlanner(queryContext);
+    RelNode plan = planner.getPlan(SIMPLE_WINDOW_AGGREGATE);
+
+    if( plan.getInput(0).getInput(0).getInput(0) instanceof SamzaWindowRel) {
+      new WindowOperatorGenerator((JavaTypeFactory) plan.getCluster().getTypeFactory()).generate((Window)plan.getInput(0).getInput(0).getInput(0));
+    }
   }
 
   public static class ProjectVisitor extends SamzaAbstractRelVisitor {

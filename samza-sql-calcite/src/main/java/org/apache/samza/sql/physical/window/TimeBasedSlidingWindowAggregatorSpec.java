@@ -19,8 +19,14 @@
 
 package org.apache.samza.sql.physical.window;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.calcite.rel.core.Window;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.operators.SimpleOperatorSpec;
+
+import java.security.Timestamp;
+import java.util.List;
 
 public class TimeBasedSlidingWindowAggregatorSpec extends SimpleOperatorSpec {
 
@@ -33,12 +39,18 @@ public class TimeBasedSlidingWindowAggregatorSpec extends SimpleOperatorSpec {
     TIME_NANO
   }
 
-  // Note: We may not need this. Calcite may handle this differently
-  private final TimeUnit timeUnit;
+  private final List<Window.Group> groups;
 
+  private final ImmutableList<RexLiteral> constants;
 
-  public TimeBasedSlidingWindowAggregatorSpec(String id, EntityName input, EntityName output, TimeUnit timeUnit) {
+  public TimeBasedSlidingWindowAggregatorSpec(String id, EntityName input, EntityName output,
+                                              List<Window.Group> groups, ImmutableList<RexLiteral> constants) {
     super(id, input, output);
-    this.timeUnit = timeUnit;
+    this.groups = groups;
+    this.constants = constants;
+  }
+
+  public List<Window.Group> getGroups() {
+    return groups;
   }
 }

@@ -19,5 +19,29 @@
 
 package org.apache.samza.sql.physical.aggregate;
 
+import org.apache.calcite.linq4j.tree.Expression;
+import org.apache.calcite.rel.core.AggregateCall;
+
+import java.util.List;
+
 public class StreamingAggImpState {
+  public final int aggIdx;
+  public final AggregateCall call;
+  public final StreamingAggImplementor implementor;
+  public StreamingAggContext context;
+  public Expression result;
+  public List<Expression> state;
+
+  public StreamingAggImpState(int aggIdx, AggregateCall call, boolean windowContext) {
+    this.aggIdx = aggIdx;
+    this.call = call;
+    this.implementor =
+        StreamingRexImplTable.INSTANCE.get(call.getAggregation());
+    if (implementor == null) {
+      throw new IllegalArgumentException(
+          "Unable to get aggregate implementation for aggregate "
+              + call.getAggregation()
+              + (windowContext ? " in window context" : ""));
+    }
+  }
 }

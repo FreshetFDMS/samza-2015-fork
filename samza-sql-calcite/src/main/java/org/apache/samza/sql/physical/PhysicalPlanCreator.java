@@ -18,10 +18,12 @@
  */
 package org.apache.samza.sql.physical;
 
+import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.samza.SamzaException;
 import org.apache.samza.sql.api.operators.OperatorRouter;
 import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.api.operators.SimpleOperator;
@@ -41,9 +43,12 @@ public class PhysicalPlanCreator {
 
   private final RexToJavaCompiler expressionCompiler;
 
+  private final JavaTypeFactory typeFactory;
+
   private PhysicalPlanCreator(OperatorRouter router, RexBuilder rexBuilder){
     this.router = router;
     this.expressionCompiler = new RexToJavaCompiler(rexBuilder);
+    this.typeFactory = (JavaTypeFactory)rexBuilder.getTypeFactory();
   }
 
   /**
@@ -53,6 +58,10 @@ public class PhysicalPlanCreator {
    * @return an instance of {@link PhysicalPlanCreator}
    */
   public static final PhysicalPlanCreator create(RelDataTypeFactory relDataTypeFactory){
+    if(!(relDataTypeFactory instanceof JavaTypeFactory)){
+      throw new SamzaException("Type factory should be a JavaTypeFactory");
+    }
+
     return new PhysicalPlanCreator(new SimpleRouter(), new RexBuilder(relDataTypeFactory));
   }
 
@@ -92,6 +101,10 @@ public class PhysicalPlanCreator {
    */
   protected void push(OperatorSpec spec) {
     operatorStack.push(spec);
+  }
+
+  public JavaTypeFactory getTypeFactory() {
+    return typeFactory;
   }
 
   /**
