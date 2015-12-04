@@ -60,7 +60,6 @@ public enum SamzaBuiltInMethod {
   WINDOWOP_INIT_PARTITIONS(WindowOperator.class, "initPartitions", Integer.class),
   WINDOWOP_GET_PARTITIONS(WindowOperator.class, "getPartitions", Integer.class),
   WINDOWOP_GET_OUTPUT_STREAM_NAME(WindowOperator.class, "getOutputStreamName"),
-  WINDOWOP_GET_OUTPUT_STREAM(WindowOperator.class, "getOutputStream"),
   INTERMEDIATE_TUPLE_GET_CONTENT(IntermediateMessageTuple.class, "getContent"),
   INTERMEDIATE_TUPLE_GET_OFFSET(IntermediateMessageTuple.class, "getOffset"),
   EXPR_EXECUTE1(org.apache.samza.sql.expr.Expression.class, "execute", Object[].class),
@@ -74,7 +73,7 @@ public enum SamzaBuiltInMethod {
   AGGSTATE_GET(WindowOperator.AggregateState.class, "get", Integer.class),
   INTERMEDIATE_TUPLE_FROM_TUPLE_AND_CONTENT(IntermediateMessageTuple.class, "fromTupleAndContent",
       IntermediateMessageTuple.class, Object[].class, EntityName.class),
-  COLLECTOR_SEND(SimpleMessageCollector.class, "send", OutgoingMessageEnvelope.class);
+  COLLECTOR_SEND(SimpleMessageCollector.class, "send", Tuple.class);
 
 
   public final Method method;

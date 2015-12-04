@@ -20,11 +20,15 @@
 package org.apache.samza.sql.physical
 
 import java.text.SimpleDateFormat
+import java.util
 import java.util.UUID
 
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.samza.Partition
+import org.apache.samza.config.{Config, MapConfig}
+import org.apache.samza.container.{SamzaContainerContext, TaskName}
+import org.apache.samza.metrics.MetricsRegistry
 import org.apache.samza.sql.data.avro.{AvroData, AvroSchema}
 import org.apache.samza.sql.planner.TestQueryPlanner
 import org.apache.samza.sql.test.MockSqlTask
@@ -41,6 +45,8 @@ class TestPhysicalPlan {
   val ordersAvroSchemaStr = try ordersAvroSchemaSource.mkString finally ordersAvroSchemaSource.close()
   val ordersAvroSchema = new Parser().parse(ordersAvroSchemaStr)
   val filterOrders = TestQueryPlanner.SIMPLE_FILTER
+  val slidingWindowSum = TestQueryPlanner.SIMPLE_WINDOW_AGGREGATE
+  val slidingWindowConfig: Config = new MapConfig()
   val calciteModel = TestQueryPlanner.STREAM_MODEL
 
   @Test
@@ -81,6 +87,47 @@ class TestPhysicalPlan {
 
     assertEquals(filterExecutor.outputTopics.size, 1)
     assertEquals(filterExecutor.topicContent(filterExecutor.outputTopics.head).size, 3)
+  }
+
+  @Test
+  def testTimeBasedSlidingWindow(): Unit = {
+    val slidingWindowTask = new MockSqlTask(calciteModel, slidingWindowSum)
+    slidingWindowTask.init(slidingWindowConfig, new TaskContext {
+      override def setStartingOffset(ssp: SystemStreamPartition, offset: String): Unit = ???
+
+      override def getMetricsRegistry: MetricsRegistry = ???
+
+      override def getTaskName: TaskName = ???
+
+      override def getStore(name: String): AnyRef = {
+        return Nil
+      }
+
+      override def getSamzaContainerContext: SamzaContainerContext = ???
+
+      override def getSystemStreamPartitions: util.Set[SystemStreamPartition] = ???
+    })
+    val partition = new Partition(0)
+
+    val systemStream = new SystemStream("kafka", "orders")
+    val systemStreamPartition = new SystemStreamPartition(systemStream, partition)
+    val slidingWindowExecutor = new InMemoryStreamingTaskExecutor(slidingWindowTask, "sql-task", systemStream, systemStreamPartition)
+    val orders = loadOrderRecords()
+
+    orders.indices.foreach((i: Int) => {
+      slidingWindowExecutor.send(new IncomingMessageEnvelope(systemStreamPartition, i.toString, null, orders(i)))
+    })
+
+
+    println(s"Output size: ${slidingWindowExecutor.outputTopics.size}")
+
+    /*
+     * It looks like this way of executing tasks can't be use with window operators due to the requirements of local stores.
+     * So we need to try to use ThreadJobFactory instead.
+     *
+     * 1. We need in-memory system which is a singleton
+     * 2. We need
+     */
   }
 
   private def loadOrderRecords(): List[AvroData] = {

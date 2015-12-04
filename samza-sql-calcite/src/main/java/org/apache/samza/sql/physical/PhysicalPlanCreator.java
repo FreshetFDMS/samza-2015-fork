@@ -36,6 +36,10 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * TODO: Physical plan creator should keep names of local storage units that are used by operator. Also should keep
+ * TODO: type information useful when configuring Serdes.
+ */
 public class PhysicalPlanCreator {
   private final OperatorRouter router;
 

@@ -272,6 +272,7 @@ project(":samza-sql-core_$scalaVersion") {
     compile project(":samza-core_$scalaVersion")
     compile project(":samza-kv_$scalaVersion")
     compile "commons-collections:commons-collections:$commonsCollectionVersion"
+    compile "io.confluent:kafka-schema-registry:$schemaRegistryVersion"
     compile "org.apache.avro:avro:$avroVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-all:$mockitoVersion"
@@ -284,7 +285,15 @@ project(":samza-sql-calcite_$scalaVersion") {
 
   dependencies {
     compile project(":samza-sql-core_$scalaVersion")
+    compile project(":samza-kafka_$scalaVersion")
     compile "org.apache.calcite:calcite-core:$calciteVersion"
+    compile "com.101tec:zkclient:$zkClientVersion"
+    compile "org.apache.zookeeper:zookeeper:$zookeeperVersion"
+    compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
+    compile "org.apache.kafka:kafka_$scalaVersion:$kafkaVersion"
+    compile "org.apache.kafka:kafka-clients:$kafkaVersion"
+    testCompile "io.confluent:kafka-schema-registry:$schemaRegistryVersion"
+    testCompile "org.apache.kafka:kafka_$scalaVersion:$kafkaVersion:test"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-all:$mockitoVersion"
   }

@@ -41,7 +41,6 @@ import org.apache.samza.sql.codegen.SamzaBuiltInMethod;
 import org.apache.samza.sql.data.IntermediateMessageTuple;
 import org.apache.samza.sql.physical.aggregate.*;
 import org.apache.samza.sql.window.storage.TimeAndOffsetKey;
-import org.apache.samza.system.OutgoingMessageEnvelope;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
 import org.codehaus.commons.compiler.CompileException;
@@ -445,11 +444,17 @@ public class WindowOperatorGenerator {
 
     Expression creatingOutputTuple =
         Expressions.call(SamzaBuiltInMethod.INTERMEDIATE_TUPLE_FROM_TUPLE_AND_CONTENT.method, inputTuple, outputArray,
-        Expressions.call(Expressions.parameter(WindowOperator.class, "this"), SamzaBuiltInMethod.WINDOWOP_GET_OUTPUT_STREAM_NAME.method));
-    Expression outgoingEnvelope = Expressions.new_(OutgoingMessageEnvelope.class,
-        Expressions.call(Expressions.parameter(WindowOperator.class, "this"), SamzaBuiltInMethod.WINDOWOP_GET_OUTPUT_STREAM.method),
-        creatingOutputTuple);
-    parent.add(Expressions.statement(Expressions.call(collector, SamzaBuiltInMethod.COLLECTOR_SEND.method, outgoingEnvelope)));
+            Expressions.call(Expressions.parameter(WindowOperator.class, "this"), SamzaBuiltInMethod.WINDOWOP_GET_OUTPUT_STREAM_NAME.method));
+//    Expression outgoingEnvelope = Expressions.new_(OutgoingMessageEnvelope.class,
+//        Expressions.call(Expressions.parameter(WindowOperator.class, "this"), SamzaBuiltInMethod.WINDOWOP_GET_OUTPUT_STREAM.method),
+//        creatingOutputTuple);
+    ParameterExpression exception = Expressions.parameter(Exception.class, "e");
+    parent.add(
+        Expressions.tryCatch(
+            Expressions.statement(Expressions.call(collector, SamzaBuiltInMethod.COLLECTOR_SEND.method, creatingOutputTuple)),
+            Expressions.catch_(
+                exception,
+                Expressions.throw_(Expressions.new_(RuntimeException.class, exception)))));
   }
 
   private Expression generateAdjustAggregate(Window.Group group, Integer groupId, List<StreamingAggImpState> aggs, final PhysType inputRowType,

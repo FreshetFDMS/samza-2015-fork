@@ -28,6 +28,7 @@ import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.data.IntermediateMessageTuple;
 import org.apache.samza.sql.operators.SimpleOperatorImpl;
 import org.apache.samza.sql.physical.window.TimeBasedSlidingWindowAggregatorState;
+import org.apache.samza.sql.physical.window.WindowOperatorSpec;
 import org.apache.samza.sql.physical.window.WindowStore;
 import org.apache.samza.sql.window.storage.MessageStore;
 import org.apache.samza.sql.window.storage.OrderedStoreKey;
@@ -78,9 +79,20 @@ public abstract class WindowOperator extends SimpleOperatorImpl {
    */
   protected Map<Integer, Map<PartitionKey, AggregateState>> aggregatesMap = new HashMap<Integer, Map<PartitionKey, AggregateState>>();
 
+  protected WindowOperatorSpec spec;
+
 
   public WindowOperator() {
     super(null);
+  }
+
+  public void setSpec(WindowOperatorSpec spec) {
+    this.spec = spec;
+  }
+
+  @Override
+  public WindowOperatorSpec getSpec() {
+    return spec;
   }
 
   @Override
@@ -134,11 +146,7 @@ public abstract class WindowOperator extends SimpleOperatorImpl {
   }
 
   public EntityName getOutputStreamName() {
-    return null; // TODO: Fix this
-  }
-
-  public SystemStream getOutputStream() {
-    return null; // TODO: Fix this
+    return spec.getOutputName();
   }
 
   public void updateLowerBound(Integer groupId, Long timestamp) {

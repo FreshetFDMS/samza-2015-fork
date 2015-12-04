@@ -40,6 +40,7 @@ import org.apache.samza.sql.planner.logical.SamzaRel;
 import org.apache.samza.sql.planner.logical.SamzaWindowRel;
 import org.apache.samza.sql.schema.CalciteModelProcessor;
 import org.apache.samza.sql.test.OrderStreamFactory;
+import org.apache.samza.sql.test.ProductTableFactory;
 import org.apache.samza.sql.test.ProjectedOrdersStreamFactory;
 import org.apache.samza.sql.utils.SamzaAbstractRelVisitor;
 import org.junit.Before;
@@ -69,6 +70,14 @@ public class TestQueryPlanner {
       + "       },"
       + "       {\n"
       + "         type: 'custom',\n"
+      + "         name: 'PRODUCTS',\n"
+      + "         stream: {\n"
+      + "            stream: true\n"
+      + "         },\n"
+      + "         factory: '" + ProductTableFactory.class.getName() + "'\n"
+      + "       },"
+      + "       {\n"
+      + "         type: 'custom',\n"
       + "         name: 'FILTEREDPROJECTEDORDERS',\n"
       + "         stream: {\n"
       + "           stream: true\n"
@@ -84,6 +93,9 @@ public class TestQueryPlanner {
       + STREAM_SCHEMA
       + "   ]\n"
       + "}";
+
+  public static final String STREAM_TO_RELATION_JOIN =
+      "select stream orders.orderId, orders.productId, products.name from orders join products on orders.productId = products.id";
 
   public static final String SIMPLE_PROJECT =
       "select stream productId, units from orders";
@@ -151,6 +163,16 @@ public class TestQueryPlanner {
   public void testSimpleProject() throws ValidationException, RelConversionException {
     QueryPlanner planner = new QueryPlanner(queryContext);
     RelNode plan = planner.getPlan(SIMPLE_PROJECT);
+
+    Assert.assertNotNull(plan);
+
+    // TODO: Add assert to check the generated query plan
+  }
+
+  @Test
+  public void testSimpleStreamToRelationJoin() throws ValidationException, RelConversionException {
+    QueryPlanner planner = new QueryPlanner(queryContext);
+    RelNode plan = planner.getPlan(STREAM_TO_RELATION_JOIN);
 
     Assert.assertNotNull(plan);
 
