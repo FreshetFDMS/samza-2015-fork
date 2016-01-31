@@ -355,7 +355,7 @@ project(":samza-sql-core") {
   }
 }
 
-project(":samza-sql-calcite") {
+project(":samza-sql-planner") {
   apply plugin: 'java'
 
   dependencies {
