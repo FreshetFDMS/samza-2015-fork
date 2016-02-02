@@ -20,6 +20,7 @@
 package org.apache.samza.sql.window.storage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.samza.storage.kv.Entry;
@@ -41,6 +42,11 @@ public class WindowStore implements KeyValueStore<OrderedStoreKey, WindowState> 
   }
 
   @Override
+  public Map<OrderedStoreKey, WindowState> getAll(List<OrderedStoreKey> keys) {
+    return null;
+  }
+
+  @Override
   public void put(OrderedStoreKey key, WindowState value) {
     this.underlying.put(key, value);
   }
@@ -53,6 +59,11 @@ public class WindowStore implements KeyValueStore<OrderedStoreKey, WindowState> 
   @Override
   public void delete(OrderedStoreKey key) {
     this.underlying.delete(key);
+  }
+
+  @Override
+  public void deleteAll(List<OrderedStoreKey> keys) {
+
   }
 
   @Override

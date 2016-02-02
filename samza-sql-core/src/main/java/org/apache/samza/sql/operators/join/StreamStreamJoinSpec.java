@@ -37,7 +37,7 @@ public class StreamStreamJoinSpec extends SimpleOperatorSpec {
   }
 
   @SuppressWarnings("serial")
-  public StreamStreamJoinSpec(String id, List<String> inputRelations, String output, List<String> joinKeys) {
+  public StreamStreamJoinSpec(String id, final List<String> inputRelations, String output, List<String> joinKeys) {
     super(id, new ArrayList<EntityName>() {
       {
         for (String input : inputRelations) {

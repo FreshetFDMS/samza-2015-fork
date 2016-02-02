@@ -61,7 +61,7 @@ public class HashPrefixedMessageStore extends MessageStore {
 
   private Range<OrderedStoreKey> getPrefixedRange(Range<OrderedStoreKey> range, List<Entry<String, Object>> filterFields) {
     String prefixStr = this.getPrefix(filterFields);
-    return Range.between(new PrefixedKey(prefixStr, range.getMin()), new PrefixedKey(prefixStr, range.getMax()));
+    return Range.<OrderedStoreKey>between(new PrefixedKey(prefixStr, range.getMin()), new PrefixedKey(prefixStr, range.getMax()));
   }
 
   @Override

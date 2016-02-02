@@ -22,7 +22,7 @@ include \
   'samza-log4j',
   'samza-shell',
   'samza-sql-core',
-  'samza-sql-calcite'
+  'samza-sql-planner'
 
 def scalaModules = [
         'samza-core',
