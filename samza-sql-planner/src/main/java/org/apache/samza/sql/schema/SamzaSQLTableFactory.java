@@ -16,32 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
+package org.apache.samza.sql.schema;
 
-scalaModules.each {
-  include it
-}
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Table;
+import org.apache.calcite.schema.TableFactory;
 
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
+import java.util.Map;
+
+/**
+ * Factory that creates a {@link SamzaSQLTable}.
+ *
+ */
+public class SamzaSQLTableFactory implements TableFactory<Table> {
+  @Override
+  public Table create(SchemaPlus schema, String name, Map<String, Object> operand, RelDataType rowType) {
+    return new SamzaSQLTable(name, schema.getName(), operand);
   }
 }

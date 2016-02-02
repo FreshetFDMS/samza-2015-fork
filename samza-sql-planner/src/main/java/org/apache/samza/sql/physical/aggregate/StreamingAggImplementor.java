@@ -16,32 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
+package org.apache.samza.sql.physical.aggregate;
 
-scalaModules.each {
-  include it
-}
 
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
-  }
+import org.apache.calcite.adapter.enumerable.AggImplementor;
+import org.apache.calcite.linq4j.tree.Expression;
+
+public interface StreamingAggImplementor extends AggImplementor {
+
+  /**
+   * Updates intermediate values to account for the value removed from the window.
+   * {@link StreamingAggSubtractContext#accumulator()} should be used to reference
+   * the state variables.
+   *
+   * @param info Streaming aggregate context
+   * @param sub  Streaming aggregate subtract context
+   */
+  Expression implementSubtract(StreamingAggContext info, StreamingAggSubtractContext sub);
+
+  Expression implementStreamingAdd(StreamingAggContext info, StreamingAggAddContext add);
+
 }

@@ -16,32 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
+package org.apache.samza.sql.planner.common;
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
+import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rex.RexNode;
 
-scalaModules.each {
-  include it
-}
+import java.util.Set;
 
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
+public abstract class SamzaThetaJoinRelBase extends Join implements SamzaRelNode {
+
+  protected SamzaThetaJoinRelBase(RelOptCluster cluster, RelTraitSet traits,
+                                  RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
+                                  Set<String> variablesStopped) {
+    super(cluster, traits, left, right, condition, joinType, variablesStopped);
   }
 }

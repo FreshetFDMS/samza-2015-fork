@@ -37,6 +37,8 @@
   commonsCodecVersion = "1.9"
   commonsCollectionVersion = "3.2.1"
   avroVersion = "1.7.7"
-  calciteVersion = "1.2.0-incubating"
+  calciteVersion = "1.6.0.samzasql"
   httpClientVersion="4.4.1"
-}
+  curatorVersion = "2.9.1"
+  gsonVersion = "2.4"
+ }

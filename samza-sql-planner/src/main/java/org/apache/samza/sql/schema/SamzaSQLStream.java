@@ -16,32 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
+package org.apache.samza.sql.schema;
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
-
-scalaModules.each {
-  include it
-}
-
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
+public interface SamzaSQLStream {
+  public enum MessageSchemaType {
+    AVRO,
+    THRIFT,
+    PROTOBUF,
+    JSON;
   }
+
+  /**
+   * Returns the Samza system this stream belongs to.
+   *
+   * @return system name
+   */
+  public String getSystem();
+
+  public String getStreamName();
+
+  public String getMessageSchema();
+
+  public MessageSchemaType getMessageSchemaType();
 }

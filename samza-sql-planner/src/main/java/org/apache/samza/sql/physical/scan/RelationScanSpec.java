@@ -16,32 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
+package org.apache.samza.sql.physical.scan;
 
-scalaModules.each {
-  include it
-}
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.operators.SimpleOperatorSpec;
 
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
+public class RelationScanSpec extends SimpleOperatorSpec {
+
+  // Operation field is used to determine the changelog operation. Operation field should
+  // be a string field with values INSERT, DELETE or UPDATE. Any other value is invalid.
+  private final String operationField;
+
+  public RelationScanSpec(String id, EntityName input, EntityName output, String opField) {
+    super(id, input, output);
+    this.operationField = opField;
+  }
+
+  public String getOperationField() {
+    return operationField;
   }
 }

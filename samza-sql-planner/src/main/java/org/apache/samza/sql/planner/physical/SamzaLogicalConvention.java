@@ -16,32 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-include \
-  'samza-api',
-  'samza-elasticsearch',
-  'samza-log4j',
-  'samza-shell',
-  'samza-sql-core',
-  'samza-sql-planner'
+package org.apache.samza.sql.planner.physical;
 
-def scalaModules = [
-        'samza-core',
-        'samza-kafka',
-        'samza-kv',
-        'samza-kv-inmemory',
-        'samza-kv-rocksdb',
-        'samza-hdfs',
-        'samza-yarn',
-        'samza-test',
-        'samza-autoscaling'
-] as HashSet
+import org.apache.calcite.plan.*;
 
-scalaModules.each {
-  include it
-}
+public enum  SamzaLogicalConvention implements Convention {
+  INSTANCE;
 
-rootProject.children.each {
-  if (scalaModules.contains(it.name)) {
-    it.name = it.name + "_" + scalaVersion
+  @Override
+  public Class getInterface() {
+    return SamzaRel.class;
+  }
+
+  @Override
+  public String getName() {
+    return "SAMZA_LOGICAL";
+  }
+
+  @Override
+  public RelTraitDef getTraitDef() {
+    return ConventionTraitDef.INSTANCE;
+  }
+
+  @Override
+  public boolean satisfies(RelTrait trait) {
+    return this == trait;
+  }
+
+  @Override
+  public void register(RelOptPlanner planner) {}
+
+
+  @Override
+  public String toString() {
+    return getName();
   }
 }
