@@ -22,7 +22,6 @@ import java.util.Iterator;
 
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.api.operators.OperatorSink;
-import org.apache.samza.sql.api.operators.OperatorSource;
 import org.apache.samza.sql.api.operators.SimpleOperator;
 
 

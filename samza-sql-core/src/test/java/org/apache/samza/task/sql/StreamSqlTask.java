@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.EntityName;
 import org.apache.samza.sql.api.operators.OperatorRouter;
-import org.apache.samza.sql.api.operators.OperatorSource;
+import org.apache.samza.sql.operators.OperatorSource;
 import org.apache.samza.sql.data.IncomingMessageTuple;
 import org.apache.samza.sql.operators.factory.TopologyBuilder;
 import org.apache.samza.sql.operators.join.StreamStreamJoinSpec;

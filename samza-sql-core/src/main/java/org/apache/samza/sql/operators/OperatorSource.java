@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
+package org.apache.samza.sql.operators;
 
 import java.util.Iterator;
 
 import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.operators.SimpleOperator;
 
 
 /**
