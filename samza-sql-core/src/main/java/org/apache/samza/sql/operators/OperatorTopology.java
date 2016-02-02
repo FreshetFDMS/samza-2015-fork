@@ -16,18 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
+package org.apache.samza.sql.operators;
 
 import java.util.Iterator;
 
 import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.operators.OperatorSink;
+import org.apache.samza.sql.api.operators.OperatorSource;
+import org.apache.samza.sql.api.operators.SimpleOperator;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This class implements methods that signifies a partially completed topology that has a single unbound input/output stream that
+ * can be attached to other operators' output/input
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public class OperatorTopology implements OperatorSource, OperatorSink {
 
-  EntityName getName();
+  private final EntityName name;
+  private final SimpleRouter router;
+
+  public OperatorTopology(EntityName name, SimpleRouter router) {
+    this.name = name;
+    this.router = router;
+  }
+
+  @Override
+  public Iterator<SimpleOperator> opIterator() {
+    return this.router.iterator();
+  }
+
+  @Override
+  public EntityName getName() {
+    return this.name;
+  }
+
 }

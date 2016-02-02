@@ -19,8 +19,32 @@
 
 package org.apache.samza.sql.window.storage;
 
+import org.apache.samza.system.sql.Offset;
+
+
 /**
- * This defines the base class for all keys used in {@link org.apache.samza.sql.window.storage.MessageStore}, as well as window state store
+ * This class implements key that is composed of: (time, offset)
  */
-public abstract class OrderedStoreKey implements Comparable<OrderedStoreKey> {
+public class TimeAndOffsetKey extends OrderedStoreKey {
+  private final Offset offset;
+  private final Long timeNano;
+
+  public TimeAndOffsetKey(long timeNano, Offset offset) {
+    this.timeNano = timeNano;
+    this.offset = offset;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof TimeAndOffsetKey)) {
+      throw new IllegalArgumentException("Cannot compare TimeAndOffsetKey with other type of keys. Other key type:"
+          + o.getClass().getName());
+    }
+    TimeAndOffsetKey other = (TimeAndOffsetKey) o;
+    if (this.timeNano.compareTo(other.timeNano) != 0) {
+      return this.timeNano.compareTo(other.timeNano);
+    }
+    return this.offset.compareTo(other.offset);
+  }
+
 }

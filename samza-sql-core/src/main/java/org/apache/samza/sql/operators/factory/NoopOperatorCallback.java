@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.operators.factory;
+package org.apache.samza.sql.operators;
 
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
@@ -25,7 +25,12 @@ import org.apache.samza.task.MessageCollector;
 import org.apache.samza.task.TaskCoordinator;
 
 
+/**
+ * This is a default NOOP operator callback object that does nothing before and after the process method
+ */
 public final class NoopOperatorCallback implements OperatorCallback {
+
+  private static NoopOperatorCallback singletonInstance = null;
 
   @Override
   public Tuple beforeProcess(Tuple tuple, MessageCollector collector, TaskCoordinator coordinator) {
@@ -45,6 +50,18 @@ public final class NoopOperatorCallback implements OperatorCallback {
   @Override
   public Relation afterProcess(Relation rel, MessageCollector collector, TaskCoordinator coordinator) {
     return rel;
+  }
+
+  private NoopOperatorCallback() {
+  }
+
+  public final static NoopOperatorCallback getInstance() {
+    // CAUTION: this getInstance() is not thread-safe and hence only meant to be used in single-threaded container model.
+    // Please revisit if this method is used in a multi-threaded environment later.
+    if (singletonInstance == null) {
+      singletonInstance = new NoopOperatorCallback();
+    }
+    return singletonInstance;
   }
 
 }

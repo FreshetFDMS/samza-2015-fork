@@ -16,18 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
 
-import java.util.Iterator;
+package org.apache.samza.sql.operators.window;
 
-import org.apache.samza.sql.api.data.EntityName;
+import java.util.List;
+
+import org.apache.samza.sql.api.data.Tuple;
+import org.apache.samza.sql.window.storage.OrderedStoreKey;
+import org.apache.samza.sql.window.storage.Range;
+import org.apache.samza.storage.kv.Entry;
+import org.apache.samza.storage.kv.KeyValueIterator;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This interface class defines the methods to access messages in a {@link org.apache.samza.sql.operators.window.WindowOp}
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public interface FullStateWindow<K extends Comparable<K>> {
 
-  EntityName getName();
+  KeyValueIterator<OrderedStoreKey, Tuple> getMessages(Range<K> timeRange, List<Entry<String, Object>> filterFields);
+
+  KeyValueIterator<OrderedStoreKey, Tuple> getMessages(Range<K> timeRange);
+
 }

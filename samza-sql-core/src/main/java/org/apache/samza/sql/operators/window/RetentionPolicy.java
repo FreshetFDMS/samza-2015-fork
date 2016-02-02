@@ -16,18 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
 
-import java.util.Iterator;
-
-import org.apache.samza.sql.api.data.EntityName;
+package org.apache.samza.sql.operators.window;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This abstract class defines the base class for window retention policies
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public class RetentionPolicy {
+  private static final int ONE_GB = 1000000000;
+  private static final long FOUR_HOUR = 3600 * 4;
 
-  EntityName getName();
+  private final int maxSize;
+  private final long minTimeSec;
+
+  RetentionPolicy(int retentionSize, long retentionTime) {
+    this.maxSize = retentionSize;
+    this.minTimeSec = retentionTime;
+  }
+
+  public int getSize() {
+    return this.maxSize;
+  }
+
+  public long getTime() {
+    return this.minTimeSec;
+  }
+
+  public static RetentionPolicy getDefaultRetentionPolicy() {
+    return new RetentionPolicy(ONE_GB, FOUR_HOUR);
+  }
 }

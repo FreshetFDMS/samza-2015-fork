@@ -24,6 +24,7 @@ import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.OperatorCallback;
 import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.api.operators.SimpleOperator;
+import org.apache.samza.sql.operators.NoopOperatorCallback;
 import org.apache.samza.task.MessageCollector;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
@@ -31,7 +32,6 @@ import org.apache.samza.task.sql.SimpleMessageCollector;
 
 /**
  * An abstract class that encapsulate the basic information and methods that all operator classes should implement.
- * It implements the interface {@link org.apache.samza.sql.api.operators.SimpleOperator}
  *
  */
 public abstract class SimpleOperatorImpl implements SimpleOperator {
@@ -41,22 +41,23 @@ public abstract class SimpleOperatorImpl implements SimpleOperator {
   private final OperatorSpec spec;
 
   /**
-   * The callback function
+   * User specified callback object
    */
-  private final OperatorCallback callback;
+  protected final OperatorCallback opCallback;
 
   /**
-   * Ctor of {@code SimpleOperatorImpl} class
+   * Ctor of <code>SimpleOperator</code> class
    *
    * @param spec The specification of this operator
    */
   public SimpleOperatorImpl(OperatorSpec spec) {
-    this(spec, new NoopOperatorCallback());
+    this.spec = spec;
+    this.opCallback = NoopOperatorCallback.getInstance();
   }
 
   public SimpleOperatorImpl(OperatorSpec spec, OperatorCallback callback) {
     this.spec = spec;
-    this.callback = callback;
+    this.opCallback = callback;
   }
 
   @Override
@@ -64,73 +65,35 @@ public abstract class SimpleOperatorImpl implements SimpleOperator {
     return this.spec;
   }
 
-  /**
-   * This method is made final s.t. the sequence of invocations between {@link org.apache.samza.sql.api.operators.OperatorCallback#beforeProcess(Relation, MessageCollector, TaskCoordinator)}
-   * and real processing of the input relation is fixed.
-   */
   @Override
-  final public void process(Relation deltaRelation, MessageCollector collector, TaskCoordinator coordinator)
-      throws Exception {
-    Relation rel = this.callback.beforeProcess(deltaRelation, collector, coordinator);
+  public void process(Relation deltaRelation, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
+    Relation rel = this.opCallback.beforeProcess(deltaRelation, collector, coordinator);
+    MessageCollector opCollector = collector;
+    if (!(opCollector instanceof SimpleMessageCollector)) {
+      opCollector = new SimpleMessageCollector(opCollector, coordinator);
+    }
     if (rel == null) {
       return;
     }
-    this.realProcess(rel, getCollector(collector, coordinator), coordinator);
+    this.realProcess(rel, opCollector, coordinator);
   }
 
-  /**
-   * This method is made final s.t. the sequence of invocations between {@link org.apache.samza.sql.api.operators.OperatorCallback#beforeProcess(Tuple, MessageCollector, TaskCoordinator)}
-   * and real processing of the input tuple is fixed.
-   */
   @Override
-  final public void process(Tuple tuple, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    Tuple ituple = this.callback.beforeProcess(tuple, collector, coordinator);
+  public void process(Tuple tuple, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
+    Tuple ituple = this.opCallback.beforeProcess(tuple, collector, coordinator);
+    MessageCollector opCollector = collector;
+    if (!(opCollector instanceof SimpleMessageCollector)) {
+      opCollector = new SimpleMessageCollector(opCollector, coordinator);
+    }
     if (ituple == null) {
       return;
     }
-    this.realProcess(ituple, getCollector(collector, coordinator), coordinator);
+    this.realProcess(ituple, opCollector, coordinator);
   }
 
-  /**
-   * This method is made final s.t. we enforce the invocation of {@code SimpleOperatorImpl#getCollector(MessageCollector, TaskCoordinator)} before doing anything futher
-   */
-  @Override
-  final public void refresh(long timeNano, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
-    this.realRefresh(timeNano, getCollector(collector, coordinator), coordinator);
-  }
-
-  private SimpleMessageCollector getCollector(MessageCollector collector, TaskCoordinator coordinator) {
-    if (!(collector instanceof SimpleMessageCollector)) {
-      return new SimpleMessageCollector(collector, coordinator, this.callback);
-    } else {
-      ((SimpleMessageCollector) collector).switchOperatorCallback(this.callback);
-      return (SimpleMessageCollector) collector;
-    }
-  }
-
-  /**
-   * Method to be overriden by each specific implementation class of operator to handle timeout event
-   *
-   * @param timeNano The time in nanosecond when the timeout event occurred
-   * @param collector The {@link org.apache.samza.task.sql.SimpleMessageCollector} in the context
-   * @param coordinator The {@link org.apache.samza.task.TaskCoordinator} in the context
-   * @throws Exception Throws exception if failed to refresh the results
-   */
-  protected abstract void realRefresh(long timeNano, SimpleMessageCollector collector, TaskCoordinator coordinator)
+  protected abstract void realProcess(Relation rel, MessageCollector collector, TaskCoordinator coordinator)
       throws Exception;
 
-  /**
-   * Method to be overriden by each specific implementation class of operator to perform relational logic operation on an input {@link org.apache.samza.sql.api.data.Relation}
-   *
-   * @param rel The input relation
-   * @param collector The {@link org.apache.samza.task.sql.SimpleMessageCollector} in the context
-   * @param coordinator The {@link org.apache.samza.task.TaskCoordinator} in the context
-   * @throws Exception
-   */
-  protected abstract void realProcess(Relation rel, SimpleMessageCollector collector, TaskCoordinator coordinator)
+  protected abstract void realProcess(Tuple ituple, MessageCollector collector, TaskCoordinator coordinator)
       throws Exception;
-
-  protected abstract void realProcess(Tuple ituple, SimpleMessageCollector collector, TaskCoordinator coordinator)
-      throws Exception;
-
 }

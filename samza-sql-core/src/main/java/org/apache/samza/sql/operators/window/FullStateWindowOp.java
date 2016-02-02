@@ -16,18 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
 
-import java.util.Iterator;
+package org.apache.samza.sql.operators.window;
 
-import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.config.Config;
+import org.apache.samza.sql.api.operators.OperatorCallback;
+import org.apache.samza.sql.window.storage.MessageStore;
+import org.apache.samza.task.TaskContext;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This abstract class defines the base class for all window operators that include a full {@code messageStore}
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public abstract class FullStateWindowOp extends WindowOp {
 
-  EntityName getName();
+  protected MessageStore messageStore;
+
+  FullStateWindowOp(WindowOpSpec spec, OperatorCallback callback) {
+    super(spec, callback);
+    // TODO Auto-generated constructor stub
+  }
+
+  @Override
+  public void init(Config config, TaskContext context) throws Exception {
+    super.init(config, context);
+    this.messageStore = (MessageStore) context.getStore("wnd-msg-" + this.wndId);
+  }
+
 }

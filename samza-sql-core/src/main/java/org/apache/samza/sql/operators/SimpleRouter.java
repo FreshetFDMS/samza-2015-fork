@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.samza.sql.operators.factory;
+package org.apache.samza.sql.operators;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,28 +41,28 @@ import org.apache.samza.task.sql.RouterMessageCollector;
 
 
 /**
- * Example implementation of <code>OperatorRouter</code>
+ * Example implementation of {@link org.apache.samza.sql.api.operators.OperatorRouter}
  *
  */
-public class SimpleRouter implements OperatorRouter {
+public final class SimpleRouter implements OperatorRouter {
   /**
-   * List of operators added to the <code>OperatorRouter</code>
+   * List of operators added to the {@link org.apache.samza.sql.api.operators.OperatorRouter}
    */
   private List<SimpleOperator> operators = new ArrayList<SimpleOperator>();
 
   @SuppressWarnings("rawtypes")
   /**
-   * Map of <code>EntityName</code> to the list of operators associated with it
+   * Map of {@link org.apache.samza.sql.api.data.EntityName} to the list of operators associated with it
    */
   private Map<EntityName, List> nextOps = new HashMap<EntityName, List>();
 
   /**
-   * Set of <code>EntityName</code> as system inputs
+   * Set of {@link org.apache.samza.sql.api.data.EntityName} as inputs to this {@code SimpleRouter}
    */
   private Set<EntityName> inputEntities = new HashSet<EntityName>();
 
   /**
-   * Set of entities that are not input entities to this OperatorRouter
+   * Set of entities that are not input entities to this {@code SimpleRouter}
    */
   private Set<EntityName> outputEntities = new HashSet<EntityName>();
 
@@ -110,8 +110,7 @@ public class SimpleRouter implements OperatorRouter {
   public void process(Tuple ituple, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
     MessageCollector opCollector = new RouterMessageCollector(collector, coordinator, this);
     for (Iterator<SimpleOperator> iter = this.getNextOperators(ituple.getEntityName()).iterator(); iter.hasNext();) {
-      SimpleOperator op = iter.next();
-      op.process(ituple, opCollector, coordinator);
+      iter.next().process(ituple, opCollector, coordinator);
     }
   }
 
@@ -120,8 +119,7 @@ public class SimpleRouter implements OperatorRouter {
   public void process(Relation deltaRelation, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
     MessageCollector opCollector = new RouterMessageCollector(collector, coordinator, this);
     for (Iterator<SimpleOperator> iter = this.getNextOperators(deltaRelation.getName()).iterator(); iter.hasNext();) {
-      SimpleOperator op = iter.next();
-      op.process(deltaRelation, collector, coordinator);
+      iter.next().process(deltaRelation, opCollector, coordinator);
     }
   }
 
@@ -137,7 +135,6 @@ public class SimpleRouter implements OperatorRouter {
 
   @Override
   public Iterator<SimpleOperator> iterator() {
-    // TODO Auto-generated method stub
     return this.operators.iterator();
   }
 

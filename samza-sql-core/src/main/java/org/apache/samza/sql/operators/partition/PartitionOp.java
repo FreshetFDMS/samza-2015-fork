@@ -23,7 +23,7 @@ import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.OperatorCallback;
-import org.apache.samza.sql.operators.factory.SimpleOperatorImpl;
+import org.apache.samza.sql.operators.SimpleOperatorImpl;
 import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.system.OutgoingMessageEnvelope;
@@ -32,12 +32,11 @@ import org.apache.samza.task.TaskContext;
 import org.apache.samza.task.TaskCoordinator;
 import org.apache.samza.task.sql.SimpleMessageCollector;
 
-
 /**
  * This is an example build-in operator that performs a simple stream re-partition operation.
  *
  */
-public class PartitionOp extends SimpleOperatorImpl {
+public final class PartitionOp extends SimpleOperatorImpl {
 
   /**
    * The specification of this {@code PartitionOp}
@@ -53,6 +52,11 @@ public class PartitionOp extends SimpleOperatorImpl {
   public PartitionOp(PartitionSpec spec) {
     super(spec);
     this.spec = spec;
+  }
+
+  public PartitionOp(String id, String input, SystemStream output, String parKey, int parNum) {
+    super(new PartitionSpec(id, input, output, parKey, parNum));
+    this.spec = (PartitionSpec) this.getSpec();
   }
 
   /**

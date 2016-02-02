@@ -22,7 +22,7 @@ package org.apache.samza.task.sql;
 import org.apache.samza.sql.api.data.Relation;
 import org.apache.samza.sql.api.data.Tuple;
 import org.apache.samza.sql.api.operators.OperatorCallback;
-import org.apache.samza.sql.operators.factory.NoopOperatorCallback;
+import org.apache.samza.sql.operators.NoopOperatorCallback;
 import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.system.OutgoingMessageEnvelope;
@@ -35,6 +35,8 @@ public class SimpleMessageCollector implements MessageCollector {
   protected final TaskCoordinator coordinator;
   protected OperatorCallback callback;
 
+  private static final OperatorCallback NOOP_CALLBACK = NoopOperatorCallback.getInstance();
+
   /**
    * Ctor that creates the {@code SimpleMessageCollector} from scratch
    * @param collector The {@link org.apache.samza.task.MessageCollector} in the context
@@ -45,7 +47,7 @@ public class SimpleMessageCollector implements MessageCollector {
     this.collector = collector;
     this.coordinator = coordinator;
     if (callback == null) {
-      this.callback = new NoopOperatorCallback();
+      this.callback = NOOP_CALLBACK;
     } else {
       this.callback = callback;
     }
@@ -57,25 +59,38 @@ public class SimpleMessageCollector implements MessageCollector {
    * @param coordinator The {@link org.apache.samza.task.TaskCoordinator} in the context
    */
   public SimpleMessageCollector(MessageCollector collector, TaskCoordinator coordinator) {
-    this.collector = collector;
-    this.coordinator = coordinator;
+    this(collector, coordinator, NOOP_CALLBACK);
   }
 
   /**
    * This method swaps the {@code callback} with the new one
    *
-   * <p> This method allows the {@link org.apache.samza.sql.api.operators.SimpleOperator} to be swapped when the collector
-   * is passed down into the next operator's context. Hence, under the new operator's context, the correct {@link org.apache.samza.sql.api.operators.OperatorCallback#afterProcess(Relation, MessageCollector, TaskCoordinator)},
-   * and {@link org.apache.samza.sql.api.operators.OperatorCallback#afterProcess(Tuple, MessageCollector, TaskCoordinator)} can be invoked
+   * <p> This method allows the {@link org.apache.samza.sql.api.operators.OperatorCallback} to be swapped when the collector
+   * is passed down into the next operator's context. Hence, under the new operator's context, the correct callback functions can be invoked
    *
    * @param callback The new {@link org.apache.samza.sql.api.operators.OperatorCallback} to be set
    */
-  public void switchOperatorCallback(OperatorCallback callback) {
-    this.callback = callback;
+  public void switchCallback(OperatorCallback callback) {
+    if (callback == null) {
+      this.callback = NOOP_CALLBACK;
+    } else {
+      this.callback = callback;
+    }
   }
 
   /**
    * Method is declared to be final s.t. we enforce that the callback functions are called first
+   */
+  @Override
+  final public void send(OutgoingMessageEnvelope envelope) {
+    this.collector.send(envelope);
+  }
+
+  /**
+   * Method is declared to be final s.t. we enforce that the callback functions are called first
+   *
+   * @param deltaRelation The relation to be sent out
+   * @throws Exception Throws exception if failed to send
    */
   final public void send(Relation deltaRelation) throws Exception {
     Relation rel = this.callback.afterProcess(deltaRelation, collector, coordinator);
@@ -87,6 +102,9 @@ public class SimpleMessageCollector implements MessageCollector {
 
   /**
    * Method is declared to be final s.t. we enforce that the callback functions are called first
+   *
+   * @param tuple The tuple to be sent out
+   * @throws Exception Throws exception if failed to send
    */
   final public void send(Tuple tuple) throws Exception {
     Tuple otuple = this.callback.afterProcess(tuple, collector, coordinator);
@@ -105,10 +123,5 @@ public class SimpleMessageCollector implements MessageCollector {
 
   protected void realSend(Tuple tuple) throws Exception {
     this.collector.send((OutgoingMessageEnvelope) tuple.getMessage());
-  }
-
-  @Override
-  public void send(OutgoingMessageEnvelope envelope) {
-    this.collector.send(envelope);
   }
 }

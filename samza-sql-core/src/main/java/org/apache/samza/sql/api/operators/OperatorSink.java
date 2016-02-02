@@ -24,9 +24,9 @@ import org.apache.samza.sql.api.data.EntityName;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This interface class defines the method to access a partial operator topology that has a single unbound input entity
  */
-public interface OperatorSource {
+public interface OperatorSink {
   Iterator<SimpleOperator> opIterator();
 
   EntityName getName();

@@ -16,18 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
 
-import java.util.Iterator;
-
-import org.apache.samza.sql.api.data.EntityName;
-
+package org.apache.samza.sql.window.storage;
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This class implements key that is based on time
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public class TimeKey extends OrderedStoreKey {
+  private final Long timeNano;
 
-  EntityName getName();
+  public TimeKey(long timeNano) {
+    this.timeNano = timeNano;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof TimeKey)) {
+      throw new IllegalArgumentException("Cannot compare TimeKey to " + o.getClass().getName());
+    }
+
+    TimeKey other = (TimeKey) o;
+    return this.timeNano.compareTo(other.timeNano);
+  }
+
+  public long getTimeNano() {
+    return this.timeNano;
+  }
+
 }

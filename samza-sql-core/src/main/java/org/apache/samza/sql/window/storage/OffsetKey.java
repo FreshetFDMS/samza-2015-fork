@@ -16,18 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.api.operators;
 
-import java.util.Iterator;
+package org.apache.samza.sql.window.storage;
 
-import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.system.sql.Offset;
 
 
 /**
- * This interface class defines the method to access a partial operator topology that has a single unbound output entity
+ * This class defines keys that are based on {@link org.apache.samza.system.sql.Offset}
  */
-public interface OperatorSource {
-  Iterator<SimpleOperator> opIterator();
+public class OffsetKey extends OrderedStoreKey {
+  private final Offset offset;
 
-  EntityName getName();
+  public OffsetKey(Offset offset) {
+    this.offset = offset;
+  }
+
+  @Override
+  public int compareTo(OrderedStoreKey o) {
+    if (!(o instanceof OffsetKey)) {
+      throw new IllegalArgumentException("Cannot compare OffsetMessageKey with other type of keys. Other key type:"
+          + o.getClass().getName());
+    }
+    OffsetKey other = (OffsetKey) o;
+    return this.offset.compareTo(other.offset);
+  }
+
 }
