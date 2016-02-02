@@ -17,48 +17,47 @@
  * under the License.
  */
 
-package org.apache.samza.sql.window.storage;
+package org.apache.samza.sql.physical.window;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.samza.sql.window.storage.OrderedStoreKey;
 import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.storage.kv.KeyValueStore;
 
+import java.util.List;
+import java.util.Map;
 
-public class WindowStore implements KeyValueStore<OrderedStoreKey, WindowState> {
+public class WindowStore implements KeyValueStore<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> {
 
-  private final KeyValueStore<OrderedStoreKey, WindowState> underlying;
+  private final KeyValueStore<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> underlying;
 
-  public WindowStore(KeyValueStore<OrderedStoreKey, WindowState> underlying) {
+  public WindowStore(KeyValueStore<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> underlying) {
     this.underlying = underlying;
   }
 
   @Override
-  public WindowState get(OrderedStoreKey key) {
-    return this.underlying.get(key);
+  public TimeBasedSlidingWindowAggregatorState get(OrderedStoreKey key) {
+    return underlying.get(key);
   }
 
   @Override
-  public Map<OrderedStoreKey, WindowState> getAll(List<OrderedStoreKey> keys) {
-      return null;
+  public Map<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> getAll(List<OrderedStoreKey> keys) {
+    return null;
   }
 
   @Override
-  public void put(OrderedStoreKey key, WindowState value) {
-    this.underlying.put(key, value);
+  public void put(OrderedStoreKey key, TimeBasedSlidingWindowAggregatorState value) {
+    underlying.put(key, value);
   }
 
   @Override
-  public void putAll(List<Entry<OrderedStoreKey, WindowState>> entries) {
-    this.underlying.putAll(entries);
+  public void putAll(List<Entry<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState>> entries) {
+    underlying.putAll(entries);
   }
 
   @Override
   public void delete(OrderedStoreKey key) {
-    this.underlying.delete(key);
+    underlying.delete(key);
   }
 
   @Override
@@ -67,27 +66,22 @@ public class WindowStore implements KeyValueStore<OrderedStoreKey, WindowState> 
   }
 
   @Override
-  public KeyValueIterator<OrderedStoreKey, WindowState> range(OrderedStoreKey from, OrderedStoreKey to) {
-    return this.underlying.range(from, to);
+  public KeyValueIterator<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> range(OrderedStoreKey from, OrderedStoreKey to) {
+    return underlying.range(from, to);
   }
 
   @Override
-  public KeyValueIterator<OrderedStoreKey, WindowState> all() {
-    return this.underlying.all();
+  public KeyValueIterator<OrderedStoreKey, TimeBasedSlidingWindowAggregatorState> all() {
+    return underlying.all();
   }
 
   @Override
   public void close() {
-    this.underlying.close();
+    underlying.close();
   }
 
   @Override
   public void flush() {
-    this.underlying.flush();
+    underlying.flush();
   }
-
-  public void flush(Set<OrderedStoreKey> pendingFlushWindows) {
-    //TODO: write the buffered window state updates to disk
-  }
-
 }

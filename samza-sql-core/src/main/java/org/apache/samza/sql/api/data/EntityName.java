@@ -158,7 +158,7 @@ public class EntityName {
   }
 
   public static EntityName getAnonymousStream() {
-    return getStreamName(ANONYMOUS);
+    return getStreamName(ANONYMOUS); // TODO: Fix this to return unique names
   }
 
   public static EntityName getAnonymousTable() {

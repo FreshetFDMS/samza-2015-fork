@@ -24,6 +24,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.samza.sql.schema.AvroSchemaConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
