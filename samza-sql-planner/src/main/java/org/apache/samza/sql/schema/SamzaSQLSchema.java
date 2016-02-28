@@ -36,7 +36,7 @@ import java.util.Map;
  *     {
  *       name: 'SALES',
  *       type: 'custom',
- *       factory: 'org.apache.samza.sql.calcite.schema.SamzaSQLSchemaFactory',
+ *       factory: 'org.apache.samza.sql.schema.SamzaSQLSchemaFactory',
  *       operand: {
  *         schemaregistry: 'http://localhost:8081',
  *         kafkabrokers: 'localhost:9092',
@@ -46,7 +46,7 @@ import java.util.Map;
  *       {
  *         name: 'Orders',
  *         type: 'custom',
- *         facotry: 'org.apache.samza.sql.calcite.schema.SamzaSQLTableFactory',
+ *         facotry: 'org.apache.samza.sql.schema.SamzaSQLTableFactory',
  *         operand: {
  *           avroschema: {
  *             "type": "records",

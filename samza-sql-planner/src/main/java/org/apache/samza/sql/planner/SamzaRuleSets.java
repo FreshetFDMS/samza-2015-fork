@@ -44,7 +44,8 @@ public class SamzaRuleSets {
           SamzaSortRule.INSTANCE,
           SamzaWindowRule.INSTANCE,
           SamzaAggregateRule.INSTANCE,
-          SamzaJoinRule.INSTANCE
+          SamzaJoinRule.INSTANCE,
+          SamzaModifyRule.INSTANCE
       ).build();
 
   public static RuleSet[] getRuleSets() {
@@ -52,7 +53,7 @@ public class SamzaRuleSets {
      * Calcite planner takes an array of RuleSet and we can refer to them by index to activate
      * each rule set for transforming the query plan based on different criteria.
      */
-    return new RuleSet[]{new SamzaRuleSet(StreamRules.RULES), new SamzaRuleSet(calciteToSamzaConversionRules)};
+    return new RuleSet[]{new SamzaRuleSet(StreamRules.RULES), new SamzaRuleSet(ImmutableSet.<RelOptRule>builder().addAll(StreamRules.RULES).addAll(calciteToSamzaConversionRules).build())};
   }
 
   private static class SamzaRuleSet implements RuleSet {

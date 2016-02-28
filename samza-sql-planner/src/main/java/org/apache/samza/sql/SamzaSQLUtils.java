@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql;
 
-package org.apache.samza.sql.jdbc;
+import org.apache.samza.SamzaException;
+import org.apache.samza.config.Config;
+import org.apache.samza.sql.metastore.SamzaSQLMetaStoreFactory;
+import org.apache.samza.sql.metastore.ZKBakedQueryMetaStoreFactory;
 
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.samza.sql.api.Closeable;
+public class SamzaSQLUtils {
+  private static final String METADATA_STORE_FACTORY = "samza.sql.metadata.store.factory";
 
-public interface SamzaSQLConnection extends CalciteConnection {
-
-  void registerCloseable(Closeable closeable);
-
-  String getModel();
-
+  public static SamzaSQLMetaStoreFactory getMetaStoreFactoryInstance(Config config) {
+    String factoryClassName = config.get(METADATA_STORE_FACTORY, ZKBakedQueryMetaStoreFactory.class.toString());
+    try {
+      Class factoryClass = SamzaSQLUtils.class.getClassLoader().loadClass(factoryClassName);
+      return (SamzaSQLMetaStoreFactory) factoryClass.newInstance();
+    } catch (Exception e) {
+      throw new SamzaException(e);
+    }
+  }
 }

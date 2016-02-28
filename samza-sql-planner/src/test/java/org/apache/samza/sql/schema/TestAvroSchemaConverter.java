@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.calcite.schema;
+package org.apache.samza.sql.schema;
 
 import org.apache.avro.Schema;
 import org.apache.calcite.rel.type.RelDataType;
@@ -24,7 +24,6 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.samza.sql.schema.AvroSchemaConverter;
 import org.junit.Assert;
 import org.junit.Test;
 

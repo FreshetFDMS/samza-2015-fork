@@ -105,10 +105,6 @@ public class QueryPlanner {
     return physicalPlanCreator.getRouter();
   }
 
-  public Map<String, String> getSamzaJobProperties(String query) {
-    return null;
-  }
-
   public SamzaRel getPlan(String query) throws ValidationException, RelConversionException, SqlParseException {
     return (SamzaRel) validateAndConvert(planner.parse(query));
   }
@@ -116,7 +112,6 @@ public class QueryPlanner {
   private RelNode validateAndConvert(SqlNode sqlNode) throws ValidationException, RelConversionException {
     SqlNode validated = validateNode(sqlNode);
     RelNode relNode = convertToRelNode(validated);
-    relNode = applyStreamRules(relNode);
 
     // Drill does pre-processing too. We can do pre processing here if needed.
     // Drill also preserve the validated type of the sql query for later use. But current Calcite

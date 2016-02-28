@@ -40,18 +40,27 @@ import java.util.Map;
  * {
  *   name: 'Orders',
  *   type: 'custom',
- *   facotry: 'org.apache.samza.sql.calcite.schema.SamzaSQLTableFactory',
+ *   facotry: 'org.apache.samza.sql.schema.SamzaSQLTableFactory',
  *   operand: {
  *     stream : true,
  *     system : 'kafka',
  *     messageschematype: 'avro',
  *     messageschema: {
- *       "type": "records",
+ *       "type": "record",
  *       "namespace": "com.example",
  *       "name": "FullName",
  *       "fields": [
  *         { "name": "first", "type": "string" },
  *         { "name": "last", "type": "string" }
+ *       ]
+ *     },
+ *     keytype: 'int',
+ *     keyschema: {
+ *       "type": "record",
+ *       "namespace": "com.example",
+ *       "name": "EmpId",
+ *       "fields": [
+ *         { "name": "id", "type": "int" }
  *       ]
  *     }
  *   }
@@ -70,13 +79,17 @@ public class SamzaSQLTable implements ScannableTable, StreamableTable, SamzaSQLS
 
   private MessageSchemaType messageSchemaType;
 
+  private KeyType keyType;
+
+  private String keySchema;
+
   public SamzaSQLTable(String name, String schemaName, Map<String, Object> operands) {
     this.name = name;
     this.schema = schemaName;
     this.isStream = (Boolean) operands.get("stream") != null ? (Boolean) operands.get("stream") : true;
 
     if (operands.containsKey("messageschematype")) {
-      this.messageSchemaType = MessageSchemaType.valueOf((String) operands.get("messageschematype"));
+      this.messageSchemaType = MessageSchemaType.valueOf(((String) operands.get("messageschematype")).toUpperCase());
     } else {
       this.messageSchemaType = MessageSchemaType.AVRO;
     }
@@ -87,6 +100,18 @@ public class SamzaSQLTable implements ScannableTable, StreamableTable, SamzaSQLS
       this.messageSchema = gson.toJson(schema);
     } else {
       throw new SamzaException("Cannot find required field 'messageschema'.");
+    }
+
+    if (operands.containsKey("keytype")) {
+      this.keyType = KeyType.valueOf(((String)operands.get("keytype")).toUpperCase());
+    } else {
+      this.keyType = KeyType.BINARY;
+    }
+
+    if (operands.containsKey("keyschema")) {
+      Map schema = (Map) operands.get("keyschema");
+      Gson gson = new Gson();
+      this.keySchema = gson.toJson(schema);
     }
   }
 
@@ -135,6 +160,16 @@ public class SamzaSQLTable implements ScannableTable, StreamableTable, SamzaSQLS
 
   public MessageSchemaType getMessageSchemaType() {
     return messageSchemaType;
+  }
+
+  @Override
+  public KeyType getKeyType() {
+    return keyType;
+  }
+
+  @Override
+  public String getKeySchema() {
+    return keySchema;
   }
 
   @Override

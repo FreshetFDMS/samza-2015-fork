@@ -31,7 +31,7 @@ import org.apache.samza.sql.planner.common.SamzaTableModifyRelBase;
 import java.util.List;
 
 public class SamzaTableModifyRel extends SamzaTableModifyRelBase implements SamzaRel {
-  protected SamzaTableModifyRel(RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
+  public SamzaTableModifyRel(RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
                                 Prepare.CatalogReader catalogReader, RelNode child,
                                 TableModify.Operation operation, List<String> updateColumnList,
                                 boolean flattened) {

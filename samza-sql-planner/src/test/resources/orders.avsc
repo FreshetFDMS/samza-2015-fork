@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "Orders",
+  "namespace": "com.example",
+  "fields": [{
+     "name": "orderId",
+     "type": "int"
+  }, {
+    "name": "productId",
+    "type": "string"
+  }, {
+    "name": "rowtime",
+    "type": "long"
+  }, {
+    "name": "units",
+    "type": "int"
+  }]
+}

@@ -24,8 +24,12 @@ import org.apache.samza.config.Config;
 import org.apache.samza.serializers.Serde;
 import org.apache.samza.serializers.SerdeFactory;
 import org.apache.samza.sql.data.avro.AvroData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlAvroSerdeFactory implements SerdeFactory<AvroData> {
+  private static final Logger log = LoggerFactory.getLogger(SqlAvroSerdeFactory.class);
+
   public static final String PROP_AVRO_SCHEMA = "serializers.%s.schema";
 
   @Override
@@ -33,6 +37,10 @@ public class SqlAvroSerdeFactory implements SerdeFactory<AvroData> {
     String avroSchemaStr = config.get(String.format(PROP_AVRO_SCHEMA, name));
     if (avroSchemaStr == null || avroSchemaStr.isEmpty()) {
       throw new SamzaException("Cannot find avro schema for SerdeFactory '" + name + "'.");
+    }
+
+    if(log.isDebugEnabled()) {
+      log.debug("Avro Schema: " + avroSchemaStr);
     }
 
     return new SqlAvroSerde(new Schema.Parser().parse(avroSchemaStr));

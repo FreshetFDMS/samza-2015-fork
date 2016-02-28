@@ -17,15 +17,26 @@
  * under the License.
  */
 
-package org.apache.samza.sql.jdbc;
+package org.apache.samza.sql.data.serializers;
 
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.samza.sql.api.Closeable;
+import org.apache.samza.serializers.IntegerSerde;
+import org.apache.samza.serializers.Serde;
+import org.apache.samza.sql.data.numbers.IntegerData;
 
-public interface SamzaSQLConnection extends CalciteConnection {
+public class SqlIntegerSerde implements Serde<IntegerData> {
+  private final Serde<Integer> serde;
 
-  void registerCloseable(Closeable closeable);
+  public SqlIntegerSerde() {
+    this.serde = new IntegerSerde();
+  }
 
-  String getModel();
+  @Override
+  public IntegerData fromBytes(byte[] bytes) {
+    return new IntegerData(serde.fromBytes(bytes));
+  }
 
+  @Override
+  public byte[] toBytes(IntegerData object) {
+    return serde.toBytes(object.intValue());
+  }
 }

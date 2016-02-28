@@ -16,16 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql.metastore;
 
-package org.apache.samza.sql.jdbc;
+import org.apache.samza.config.Config;
 
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.samza.sql.api.Closeable;
+public class ZKBakedQueryMetaStoreFactory implements SamzaSQLMetaStoreFactory {
+  private static final String ZK_CONNECTION_STR = "samza.sql.metastore.zk.connect";
 
-public interface SamzaSQLConnection extends CalciteConnection {
-
-  void registerCloseable(Closeable closeable);
-
-  String getModel();
-
+  @Override
+  public SamzaSQLQueryMetaStore createMetaStore(Config config) {
+    return new ZKBackedQueryMetaStore(config.get(ZK_CONNECTION_STR, "localhost:2181"));
+  }
 }

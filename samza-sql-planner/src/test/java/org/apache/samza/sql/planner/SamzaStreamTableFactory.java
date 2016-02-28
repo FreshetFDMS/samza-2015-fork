@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.calcite.planner;
+package org.apache.samza.sql.planner;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.DataContext;

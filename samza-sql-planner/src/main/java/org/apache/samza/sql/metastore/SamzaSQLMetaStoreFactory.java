@@ -16,16 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.samza.sql.metastore;
 
-package org.apache.samza.sql.jdbc;
+import org.apache.samza.config.Config;
 
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.samza.sql.api.Closeable;
-
-public interface SamzaSQLConnection extends CalciteConnection {
-
-  void registerCloseable(Closeable closeable);
-
-  String getModel();
-
+public interface SamzaSQLMetaStoreFactory {
+  SamzaSQLQueryMetaStore createMetaStore(Config config);
 }

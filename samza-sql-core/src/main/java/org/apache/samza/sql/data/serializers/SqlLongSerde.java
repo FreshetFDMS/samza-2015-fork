@@ -17,15 +17,26 @@
  * under the License.
  */
 
-package org.apache.samza.sql.jdbc;
+package org.apache.samza.sql.data.serializers;
 
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.samza.sql.api.Closeable;
+import org.apache.samza.serializers.LongSerde;
+import org.apache.samza.serializers.Serde;
+import org.apache.samza.sql.data.numbers.LongData;
 
-public interface SamzaSQLConnection extends CalciteConnection {
+public class SqlLongSerde implements Serde<LongData> {
+  private final Serde<Long> serde;
 
-  void registerCloseable(Closeable closeable);
+  public SqlLongSerde() {
+    this.serde = new LongSerde();
+  }
 
-  String getModel();
+  @Override
+  public LongData fromBytes(byte[] bytes) {
+    return new LongData(serde.fromBytes(bytes));
+  }
 
+  @Override
+  public byte[] toBytes(LongData object) {
+    return serde.toBytes(object.longValue());
+  }
 }

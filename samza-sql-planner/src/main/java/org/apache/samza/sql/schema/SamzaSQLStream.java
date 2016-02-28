@@ -26,16 +26,29 @@ public interface SamzaSQLStream {
     JSON;
   }
 
+  public enum KeyType {
+    AVRO,
+    INT,
+    STRING,
+    FLOAT,
+    LONG,
+    BINARY
+  }
+
   /**
    * Returns the Samza system this stream belongs to.
    *
    * @return system name
    */
-  public String getSystem();
+  String getSystem();
 
-  public String getStreamName();
+  String getStreamName();
 
-  public String getMessageSchema();
+  String getMessageSchema();
 
-  public MessageSchemaType getMessageSchemaType();
+  MessageSchemaType getMessageSchemaType();
+
+  KeyType getKeyType();
+
+  String getKeySchema();
 }

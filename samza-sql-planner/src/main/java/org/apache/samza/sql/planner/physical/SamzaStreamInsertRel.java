@@ -24,14 +24,18 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableModify;
+import org.apache.samza.SamzaException;
 import org.apache.samza.sql.physical.JobConfigGenerator;
+import org.apache.samza.sql.physical.JobConfigurations;
 import org.apache.samza.sql.physical.PhysicalPlanCreator;
 import org.apache.samza.sql.planner.common.SamzaStreamInsertRelBase;
+import org.apache.samza.sql.schema.SamzaSQLStream;
+import org.apache.samza.sql.schema.SamzaSQLTable;
 
 import java.util.List;
 
 public class SamzaStreamInsertRel extends SamzaStreamInsertRelBase implements SamzaRel {
-  protected SamzaStreamInsertRel(RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
+  public SamzaStreamInsertRel(RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
                                  Prepare.CatalogReader catalogReader, RelNode child,
                                  TableModify.Operation operation, List<String> updateColumnList,
                                  boolean flattened) {
@@ -39,9 +43,31 @@ public class SamzaStreamInsertRel extends SamzaStreamInsertRelBase implements Sa
   }
 
   @Override
+  public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
+    return new SamzaStreamInsertRel(getCluster(), traitSet,  getTable(), getCatalogReader(), sole(inputs),
+        getOperation(), getUpdateColumnList(), isFlattened());
+  }
+
+  @Override
   public void populateJobConfiguration(JobConfigGenerator configGenerator) throws Exception {
     ((SamzaRel)getInput()).populateJobConfiguration(configGenerator);
-    // TODO: Register stream serdes
+
+    SamzaSQLStream samzaTable = table.unwrap(SamzaSQLStream.class);
+
+    String msgSerdeName = String.format("%s-msgserde", samzaTable.getStreamName());
+    if (samzaTable.getMessageSchemaType() == SamzaSQLTable.MessageSchemaType.AVRO) {
+      configGenerator.addSerde(msgSerdeName, JobConfigGenerator.AVRO_SERDE_FACTORY);
+      configGenerator.addConfig(
+          String.format(JobConfigurations.SERIALIZERS_SCHEMA, msgSerdeName),
+          configGenerator.getQueryMetaStore().registerMessageType(configGenerator.getQueryId(),
+              samzaTable.getMessageSchema()));
+    } else {
+      throw new SamzaException("Only Avro message format is supported at this stage.");
+    }
+
+    String keySerdeName = SamzaRelUtils.deriveAndPopulateKeySerde(configGenerator, samzaTable);
+
+    configGenerator.addStream(samzaTable.getSystem(), samzaTable.getStreamName(), keySerdeName, msgSerdeName, false);
   }
 
   @Override
