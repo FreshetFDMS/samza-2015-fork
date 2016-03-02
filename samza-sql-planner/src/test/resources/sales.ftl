@@ -18,6 +18,7 @@
         stream: true
       },
       operand: {
+        keytype: 'string',
         messageschema: {
           "type": "record",
           "namespace": "com.example",
@@ -45,6 +46,7 @@
         stream: true
       },
       operand: {
+        keytype: 'string',
         messageschema: {
           "type": "record",
           "namespace": "com.example",

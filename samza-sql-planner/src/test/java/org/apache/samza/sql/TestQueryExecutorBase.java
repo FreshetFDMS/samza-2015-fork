@@ -83,7 +83,7 @@ public abstract class TestQueryExecutorBase {
 
   protected void waitForTopic(String topic) {
     TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(kafkaServers), topic, 0,
-        5000);
+        30000);
   }
 
   protected void deleteTopic(String topic) {

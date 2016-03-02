@@ -18,6 +18,7 @@
  */
 package org.apache.samza.sql.planner.physical;
 
+import com.google.common.collect.Lists;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
@@ -25,12 +26,18 @@ import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableModify;
 import org.apache.samza.SamzaException;
+import org.apache.samza.sql.api.data.EntityName;
+import org.apache.samza.sql.api.operators.OperatorSpec;
 import org.apache.samza.sql.physical.JobConfigGenerator;
 import org.apache.samza.sql.physical.JobConfigurations;
 import org.apache.samza.sql.physical.PhysicalPlanCreator;
+import org.apache.samza.sql.physical.filter.FilterSpec;
+import org.apache.samza.sql.physical.insert.InsertToStream;
+import org.apache.samza.sql.physical.insert.InsertToStreamSpec;
 import org.apache.samza.sql.planner.common.SamzaStreamInsertRelBase;
 import org.apache.samza.sql.schema.SamzaSQLStream;
 import org.apache.samza.sql.schema.SamzaSQLTable;
+import org.apache.samza.sql.utils.IdGenerator;
 
 import java.util.List;
 
@@ -71,8 +78,18 @@ public class SamzaStreamInsertRel extends SamzaStreamInsertRelBase implements Sa
   }
 
   @Override
-  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) {
+  public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
+    SamzaRel input = (SamzaRel)getInput();
+    input.physicalPlan(physicalPlanCreator);
+    OperatorSpec inputOpSpec = physicalPlanCreator.pop();
+    SamzaSQLStream outputStream = table.unwrap(SamzaSQLStream.class);
 
+    physicalPlanCreator.addOperator(new InsertToStream(
+        new InsertToStreamSpec(IdGenerator.generateOperatorId("InsertToStream"),
+            sole(inputOpSpec.getOutputNames()),
+            EntityName.getStreamName(String.format("%s:%s", outputStream.getSystem(), outputStream.getStreamName()))),
+        input.getRowType()
+    ));
   }
 
   @Override

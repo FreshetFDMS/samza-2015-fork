@@ -30,7 +30,7 @@ public class JobConfigurations {
   public static final String TASK_COMMIT_MS = "task.commit.ms";
   public static final String SYSTEMS_SAMZA_FACTORY = "systems.%s.samza.factory";
   public static final String SYSTEMS_SAMZA_KEY_SERDE = "systems.%s.samza.key.serde";
-  public static final String SYSTEMS_STREAMS_SAMZA_KEY_SERDE = "systems.%.streams.%s.samza.key.serde";
+  public static final String SYSTEMS_STREAMS_SAMZA_KEY_SERDE = "systems.%s.streams.%s.samza.key.serde";
   public static final String SYSTEMS_SAMZA_MSG_SERDE = "systems.%s.samza.msg.serde";
   public static final String SYSTEMS_STREAMS_SAMZA_MSG_SERDE = "systems.%s.streams.%s.samza.msg.serde";
   public static final String SYSTEMS_SAMZA_OFFSET_DEFAULT = "systems.%s.samza.offset.default";

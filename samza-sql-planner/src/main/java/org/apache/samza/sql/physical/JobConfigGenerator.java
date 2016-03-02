@@ -39,7 +39,7 @@ public class JobConfigGenerator {
   public static final String AVRO_SERDE_FACTORY =
       "org.apache.samza.sql.data.serializers.SqlAvroSerdeFactory";
   public static final String INT_SERDE_FACTORY = "org.apache.samza.sql.data.serializers.SqlIntegerSerdeFactory";
-  public static final String STRING_SERDE_FACTORY = "org.apache.samza.sql.data.serializers.SqlStringSerde";
+  public static final String STRING_SERDE_FACTORY = "org.apache.samza.sql.data.serializers.SqlStringSerdeFactory";
   public static final String LONG_SERDE_FACTORY = "org.apache.samza.sql.data.serializers.SqlLongSerdeFactory";
   public static final String FLOAT_SERDE_FACTORY = ""; // TODO: Implement float serde
 

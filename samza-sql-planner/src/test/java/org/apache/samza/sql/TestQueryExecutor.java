@@ -33,11 +33,11 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
 
   @Test
   public void testFilter() throws Exception {
-    String ordersTopic = "orders";
-    String schema = salesSchema(zkServer.connectString(), brokers);
+    String ordersTopic = "Orders";
+    final String schema = salesSchema(zkServer.connectString(), brokers);
     System.out.println(schema);
     MockSamzaSQLConnection samzaSQLConnection = new MockSamzaSQLConnection(schema);
-    Map<String, String> configurations = new HashMap<>();
+    final Map<String, String> configurations = new HashMap<>();
     configurations.put("samza.sql.metastore.zk.connect", zkServer.connectString());
     QueryExecutor queryExecutor = new QueryExecutor(samzaSQLConnection, new MapConfig(configurations));
     final StreamJob job = queryExecutor.executeQuery("insert into filtered select * from orders where units > 5");
@@ -60,30 +60,13 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
         @Override
         public void verify(KafkaStream<byte[], byte[]> stream) throws Exception {
           List<Map<Object, Object>> output = readMessages("/filter-test.json", "output");
-          int i = 0;
-          boolean[] foundMessage = new boolean[output.size()];
-          for (int j = 0; j < output.size(); j++) {
-            foundMessage[j] = false;
-          }
 
           ConsumerIterator<byte[], byte[]> consumerIterator = stream.iterator();
 
-          while (consumerIterator.hasNext() && i < output.size()) {
+          if(consumerIterator.hasNext()) {
             GenericRecord filteredOrder = filteredOrderFrom(consumerIterator.next().message());
-            for (Map<Object, Object> msg : output) {
-              if (filteredOrder.get("orderId").equals(msg.get("orderId"))) {
-                foundMessage[i] = true;
-              }
-            }
+            Assert.assertTrue("Filter query was successful.", filteredOrder.get("orderId").equals(Integer.valueOf((String)output.get(0).get("orderId"))));
           }
-
-          boolean result = true;
-
-          for (boolean b : foundMessage) {
-            result = result && b;
-          }
-
-          Assert.assertTrue(result);
         }
       });
       // TODO: How to cleanup topics

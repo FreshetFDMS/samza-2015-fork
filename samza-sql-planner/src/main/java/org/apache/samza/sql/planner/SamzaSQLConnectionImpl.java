@@ -45,8 +45,8 @@ public class SamzaSQLConnectionImpl implements SamzaSQLConnection {
   private String defaultSchema;
 
   public SamzaSQLConnectionImpl(String inlineModel) throws IOException {
-    this.model = inlineModel;
-    new ModelHandler(this, inlineModel);
+    this.model = "inline:" + inlineModel;
+    new ModelHandler(this, model);
   }
   @Override
   public void registerCloseable(Closeable closeable) {

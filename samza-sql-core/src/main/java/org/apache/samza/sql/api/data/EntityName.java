@@ -20,7 +20,9 @@
 package org.apache.samza.sql.api.data;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -29,12 +31,13 @@ import java.util.Map;
 public class EntityName {
   /**
    * {@code EntityType} defines the types of the entity names
-   *
    */
   private enum EntityType {
     TABLE,
     STREAM
-  };
+  }
+
+  ;
 
   /**
    * Type of the entity name
@@ -43,7 +46,7 @@ public class EntityName {
 
   /**
    * Formatted name of the entity.
-   *
+   * <p/>
    * <p>This formatted name of the entity should be unique identifier for the corresponding table/stream in the system.
    * e.g. for a Kafka system stream named "mystream", the formatted name should be "kafka:mystream".
    */
@@ -63,11 +66,18 @@ public class EntityName {
 
   private static final String ANONYMOUS = "anonymous";
 
+  final static String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
+
+  final static java.util.Random rand = new java.util.Random();
+
+  // consider using a Map<String,Boolean> to say whether the identifier is being used or not
+  final static Set<String> identifiers = new HashSet<String>();
+
   /**
    * Private ctor to create entity names
    *
-   * @param type Type of the entity name
-   * @param name Formatted name of the entity
+   * @param type           Type of the entity name
+   * @param name           Formatted name of the entity
    * @param isSystemEntity whether the entity is a system input/output
    */
   private EntityName(EntityType type, String name, boolean isSystemEntity) {
@@ -132,7 +142,7 @@ public class EntityName {
   /**
    * Static method to get the instance of {@code EntityName} with type {@code EntityType.TABLE}
    *
-   * @param name The formatted entity name of the relation
+   * @param name     The formatted entity name of the relation
    * @param isSystem The boolean flag indicating whether this is a system input/output
    * @return A <code>EntityName</code> for a relation
    */
@@ -146,7 +156,7 @@ public class EntityName {
   /**
    * Static method to get the instance of <code>EntityName</code> with type <code>EntityType.STREAM</code>
    *
-   * @param name The formatted entity name of the stream
+   * @param name     The formatted entity name of the stream
    * @param isSystem The boolean flag indicating whether this is a system input/output
    * @return A <code>EntityName</code> for a stream
    */
@@ -158,14 +168,28 @@ public class EntityName {
   }
 
   public static EntityName getAnonymousStream() {
-    return getStreamName(ANONYMOUS); // TODO: Fix this to return unique names
+    return getStreamName(randomIdentifier()); // TODO: Fix this to return unique names
   }
 
   public static EntityName getAnonymousTable() {
-    return getTableName(ANONYMOUS);
+    return getTableName(randomIdentifier());
   }
 
   public boolean isAnonymous() {
     return this.name.equals(ANONYMOUS);
+  }
+
+  private static String randomIdentifier() {
+    StringBuilder builder = new StringBuilder();
+    while (builder.toString().length() == 0) {
+      int length = rand.nextInt(5) + 5;
+      for (int i = 0; i < length; i++) {
+        builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
+      }
+      if (identifiers.contains(builder.toString())) {
+        builder = new StringBuilder();
+      }
+    }
+    return builder.toString();
   }
 }

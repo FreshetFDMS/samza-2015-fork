@@ -67,10 +67,11 @@ public class SamzaStreamScanRel extends SamzaStreamScanRelBase implements SamzaR
 
   @Override
   public void physicalPlan(PhysicalPlanCreator physicalPlanCreator) throws Exception {
+    SamzaSQLStream inputStream = table.unwrap(SamzaSQLStream.class);
     physicalPlanCreator.addOperator(
         new StreamScan(
             new StreamScanSpec(IdGenerator.generateOperatorId("StreamScan"),
-                samzaStream.getName(),
+                EntityName.getStreamName(String.format("%s:%s", inputStream.getSystem(), inputStream.getStreamName())),
                 EntityName.getAnonymousStream()),
             getRowType()));
   }
