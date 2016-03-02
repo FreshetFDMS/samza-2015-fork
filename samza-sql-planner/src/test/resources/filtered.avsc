@@ -7,7 +7,7 @@
      "type": "int"
   }, {
     "name": "productId",
-    "type": "string"
+    "type": "int"
   }, {
     "name": "rowtime",
     "type": "long"

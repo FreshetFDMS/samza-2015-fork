@@ -342,6 +342,7 @@ project(":samza-sql-core") {
     compile project(":samza-core_$scalaVersion")
     compile project(":samza-kv_$scalaVersion")
     compile "commons-collections:commons-collections:$commonsCollectionVersion"
+    compile "org.apache.curator:curator-framework:$curatorVersion"
     compile "org.apache.avro:avro:$avroVersion"
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-all:$mockitoVersion"
@@ -359,6 +360,7 @@ project(":samza-sql-planner") {
     compile "org.apache.curator:curator-framework:$curatorVersion"
     compile "com.google.code.gson:gson:$gsonVersion"
     runtime project(":samza-log4j")
+    testCompile "org.freemarker:freemarker:$freemakerVersion"
     testCompile "org.apache.kafka:kafka_$scalaVersion:$kafkaVersion"
     testCompile "org.apache.kafka:kafka_$scalaVersion:$kafkaVersion:test"
     testCompile "com.101tec:zkclient:$zkClientVersion"

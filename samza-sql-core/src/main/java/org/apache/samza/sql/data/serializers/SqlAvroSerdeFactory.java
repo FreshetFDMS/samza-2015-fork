@@ -23,7 +23,10 @@ import org.apache.samza.SamzaException;
 import org.apache.samza.config.Config;
 import org.apache.samza.serializers.Serde;
 import org.apache.samza.serializers.SerdeFactory;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStoreFactory;
 import org.apache.samza.sql.data.avro.AvroData;
+import org.apache.samza.sql.metastore.ZKBakedQueryMetaStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +42,10 @@ public class SqlAvroSerdeFactory implements SerdeFactory<AvroData> {
       throw new SamzaException("Cannot find avro schema for SerdeFactory '" + name + "'.");
     }
 
-    if(log.isDebugEnabled()) {
-      log.debug("Avro Schema: " + avroSchemaStr);
-    }
+    SamzaSQLMetaStoreFactory metaStoreFactory = new ZKBakedQueryMetaStoreFactory();
+    SamzaSQLMetaStore metaStore = metaStoreFactory.createMetaStore(config);
+    String avroSchema = metaStore.getMessageType(config.get("job.name"), avroSchemaStr);
 
-    return new SqlAvroSerde(new Schema.Parser().parse(avroSchemaStr));
+    return new SqlAvroSerde(new Schema.Parser().parse(avroSchema));
   }
 }

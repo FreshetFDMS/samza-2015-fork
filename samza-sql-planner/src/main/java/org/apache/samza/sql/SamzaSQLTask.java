@@ -22,8 +22,8 @@ import org.apache.samza.config.Config;
 import org.apache.samza.sql.api.operators.OperatorRouter;
 import org.apache.samza.sql.data.IncomingMessageTuple;
 import org.apache.samza.sql.jdbc.SamzaSQLConnection;
-import org.apache.samza.sql.metastore.SamzaSQLMetaStoreFactory;
-import org.apache.samza.sql.metastore.SamzaSQLQueryMetaStore;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStoreFactory;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
 import org.apache.samza.sql.physical.JobConfigurations;
 import org.apache.samza.sql.planner.QueryPlanner;
 import org.apache.samza.sql.planner.SamzaSQLConnectionImpl;
@@ -38,7 +38,7 @@ public class SamzaSQLTask implements StreamTask, InitableTask {
   public void init(Config config, TaskContext context) throws Exception {
     String queryId = config.get(JobConfigurations.JOB_NAME);
     SamzaSQLMetaStoreFactory metaStoreFactory = SamzaSQLUtils.getMetaStoreFactoryInstance(config);
-    SamzaSQLQueryMetaStore metaStore = metaStoreFactory.createMetaStore(config);
+    SamzaSQLMetaStore metaStore = metaStoreFactory.createMetaStore(config);
     String calciteModel = metaStore.getCalciteModel(queryId, config.get(JobConfigurations.CALCITE_MODEL));
     String query = metaStore.getQuery(queryId);
 

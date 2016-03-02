@@ -7,8 +7,8 @@
     factory: 'org.apache.samza.sql.schema.SamzaSQLSchemaFactory',
     operand: {
       schemaregistry: 'http://localhost:8081',
-      kafkabrokers: 'localhost:9092',
-      zookeeper: 'localhost:2181'
+      kafkabrokers: '${brokers}',
+      zookeeper: '${zkConnecitonStr}'
     },
     tables: [{
       name: 'Orders',

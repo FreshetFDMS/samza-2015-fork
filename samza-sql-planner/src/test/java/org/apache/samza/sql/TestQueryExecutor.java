@@ -13,6 +13,7 @@ import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.samza.SamzaException;
+import org.apache.samza.config.MapConfig;
 import org.apache.samza.job.ApplicationStatus;
 import org.apache.samza.job.StreamJob;
 import org.junit.Assert;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,16 +34,19 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
   @Test
   public void testFilter() throws Exception {
     String ordersTopic = "orders";
-    String schema = salesSchema();
+    String schema = salesSchema(zkServer.connectString(), brokers);
+    System.out.println(schema);
     MockSamzaSQLConnection samzaSQLConnection = new MockSamzaSQLConnection(schema);
-    QueryExecutor queryExecutor = new QueryExecutor(samzaSQLConnection, zkServer.connectString(), brokers);
+    Map<String, String> configurations = new HashMap<>();
+    configurations.put("samza.sql.metastore.zk.connect", zkServer.connectString());
+    QueryExecutor queryExecutor = new QueryExecutor(samzaSQLConnection, new MapConfig(configurations));
     final StreamJob job = queryExecutor.executeQuery("insert into filtered select * from orders where units > 5");
     ApplicationStatus status = job.waitForStatus(ApplicationStatus.Running, 20 * 60000);
     if (status != null && status == ApplicationStatus.Running) {
       // Send some messages
       List<Map<Object, Object>> inputMessages = readMessages("/filter-test.json", "input");
       List<KeyedMessage> orderMessages = new ArrayList<KeyedMessage>();
-      for(Map<Object, Object> msg : inputMessages) {
+      for (Map<Object, Object> msg : inputMessages) {
         orderMessages.add(createOrderFrom(ordersTopic, msg));
       }
 
@@ -57,16 +62,16 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
           List<Map<Object, Object>> output = readMessages("/filter-test.json", "output");
           int i = 0;
           boolean[] foundMessage = new boolean[output.size()];
-          for(int j = 0; j < output.size(); j++){
+          for (int j = 0; j < output.size(); j++) {
             foundMessage[j] = false;
           }
 
-          ConsumerIterator<byte[],byte[]> consumerIterator = stream.iterator();
+          ConsumerIterator<byte[], byte[]> consumerIterator = stream.iterator();
 
-          while(consumerIterator.hasNext() && i < output.size()) {
+          while (consumerIterator.hasNext() && i < output.size()) {
             GenericRecord filteredOrder = filteredOrderFrom(consumerIterator.next().message());
-            for(Map<Object, Object> msg: output){
-              if(filteredOrder.get("orderId").equals(msg.get("orderId"))){
+            for (Map<Object, Object> msg : output) {
+              if (filteredOrder.get("orderId").equals(msg.get("orderId"))) {
                 foundMessage[i] = true;
               }
             }
@@ -74,7 +79,7 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
 
           boolean result = true;
 
-          for(boolean b : foundMessage) {
+          for (boolean b : foundMessage) {
             result = result && b;
           }
 
@@ -100,10 +105,10 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
     GenericDatumWriter<Object> writer = new GenericDatumWriter<Object>(ordersSchema);
 
     GenericRecordBuilder recordBuilder = new GenericRecordBuilder(ordersSchema);
-    recordBuilder.set("orderId", order.get("orderId"));
-    recordBuilder.set("productId", order.get("productId"));
-    recordBuilder.set("rowtime", Long.valueOf(String.valueOf(order.get("rowtime"))));
-    recordBuilder.set("units", order.get("units"));
+    recordBuilder.set("orderId", Integer.valueOf((String) order.get("orderId")));
+    recordBuilder.set("productId", Integer.valueOf((String) order.get("productId")));
+    recordBuilder.set("rowtime", Long.valueOf((String) order.get("rowtime")));
+    recordBuilder.set("units", Integer.valueOf((String) order.get("units")));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Encoder encoder = EncoderFactory.get().binaryEncoder(out, null);
@@ -111,7 +116,7 @@ public class TestQueryExecutor extends TestQueryExecutorBase {
     try {
       writer.write(recordBuilder.build(), encoder);
       encoder.flush();
-      return new KeyedMessage(topic, order.get("productId"), out.toByteArray());
+      return new KeyedMessage(topic, ((String) order.get("productId")).getBytes(), out.toByteArray());
     } catch (IOException e) {
       String errMsg = "Cannot perform Avro binary encode.";
       throw new SamzaException(errMsg, e);

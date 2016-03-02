@@ -20,6 +20,10 @@ package org.apache.samza.sql;
 
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import kafka.admin.TopicCommand;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
@@ -35,12 +39,13 @@ import kafka.utils.TestZKUtils;
 import kafka.utils.ZKStringSerializer$;
 import kafka.zk.EmbeddedZookeeper;
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.samza.SamzaException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -97,7 +102,7 @@ public abstract class TestQueryExecutorBase {
     Map<Object, Object> testData = (Map<Object, Object>) gson.fromJson(
         Resources.toString(TestQueryExecutor.class.getResource(path), Charset.defaultCharset()),
         Map.class);
-    if (testData.containsKey("inputs")) {
+    if (testData.containsKey(type)) {
       return (List<Map<Object, Object>>) testData.get(type);
     } else {
       throw new SamzaException("Invalid test data format. Cannot find input messages.");
@@ -124,8 +129,19 @@ public abstract class TestQueryExecutorBase {
     verifier.verify(stream);
   }
 
-  protected String salesSchema() throws IOException {
-    return Resources.toString(TestQueryExecutorBase.class.getResource("/sales.json"), Charset.defaultCharset());
+  protected String salesSchema(String zkConnectionStr, String brokers) throws IOException, TemplateException {
+    Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+    cfg.setDefaultEncoding("UTF-8");
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    cfg.setClassForTemplateLoading(this.getClass(), "/");
+    Map root = new HashMap();
+    root.put("brokers", brokers);
+    root.put("zkConnecitonStr", zkConnectionStr);
+    Template template = cfg.getTemplate("sales.ftl");
+    Writer out = new StringWriter(4096);
+    template.process(root, out);
+
+    return out.toString();
   }
 
   public static interface QueryOutputVerifier {

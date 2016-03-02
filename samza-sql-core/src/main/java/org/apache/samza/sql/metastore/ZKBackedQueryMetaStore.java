@@ -23,6 +23,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.samza.SamzaException;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
 import org.apache.zookeeper.CreateMode;
 
 import java.io.File;
@@ -30,7 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class ZKBackedQueryMetaStore implements SamzaSQLQueryMetaStore {
+public class ZKBackedQueryMetaStore implements SamzaSQLMetaStore {
   private static final String BASE_PATH = "/samzasql/%s";
 
   private CuratorFramework curatorFramework;

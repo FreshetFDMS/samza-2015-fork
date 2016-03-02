@@ -41,4 +41,5 @@
   httpClientVersion="4.4.1"
   curatorVersion = "2.9.1"
   gsonVersion = "2.4"
+  freemakerVersion = "2.3.23"
  }

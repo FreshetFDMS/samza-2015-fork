@@ -19,7 +19,7 @@
 
 package org.apache.samza.sql.physical;
 
-import org.apache.samza.sql.metastore.SamzaSQLQueryMetaStore;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,10 +49,10 @@ public class JobConfigGenerator {
 
   private String outputStream;
 
-  private final SamzaSQLQueryMetaStore queryMetaStore;
+  private final SamzaSQLMetaStore queryMetaStore;
 
 
-  public JobConfigGenerator(String queryId, SamzaSQLQueryMetaStore queryMetaStore) {
+  public JobConfigGenerator(String queryId, SamzaSQLMetaStore queryMetaStore) {
     this.queryId = queryId;
     this.queryMetaStore = queryMetaStore;
   }
@@ -211,7 +211,7 @@ public class JobConfigGenerator {
     jobConfig.put(JobConfigurations.TASK_CLASS, className);
   }
 
-  public SamzaSQLQueryMetaStore getQueryMetaStore() {
+  public SamzaSQLMetaStore getQueryMetaStore() {
     return queryMetaStore;
   }
 
@@ -221,5 +221,9 @@ public class JobConfigGenerator {
 
   public void setMetadataStoreFactory(String metadataStoreFactory) {
     jobConfig.put(JobConfigurations.METADATA_STORE_FACTORY, metadataStoreFactory);
+  }
+
+  public void setMetaStoreZKConnectionString(String zkConnectionString) {
+    jobConfig.put("samza.sql.metastore.zk.connect", zkConnectionString);
   }
 }

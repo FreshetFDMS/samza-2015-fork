@@ -16,15 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.metastore;
+package org.apache.samza.sql.api.metastore;
 
 import org.apache.samza.config.Config;
 
-public class ZKBakedQueryMetaStoreFactory implements SamzaSQLMetaStoreFactory {
-  private static final String ZK_CONNECTION_STR = "samza.sql.metastore.zk.connect";
-
-  @Override
-  public SamzaSQLQueryMetaStore createMetaStore(Config config) {
-    return new ZKBackedQueryMetaStore(config.get(ZK_CONNECTION_STR, "localhost:2181"));
-  }
+public interface SamzaSQLMetaStoreFactory {
+  SamzaSQLMetaStore createMetaStore(Config config);
 }

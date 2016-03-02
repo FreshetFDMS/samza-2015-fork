@@ -19,7 +19,14 @@
 package org.apache.samza.sql.metastore;
 
 import org.apache.samza.config.Config;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStoreFactory;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
 
-public interface SamzaSQLMetaStoreFactory {
-  SamzaSQLQueryMetaStore createMetaStore(Config config);
+public class ZKBakedQueryMetaStoreFactory implements SamzaSQLMetaStoreFactory {
+  private static final String ZK_CONNECTION_STR = "samza.sql.metastore.zk.connect";
+
+  @Override
+  public SamzaSQLMetaStore createMetaStore(Config config) {
+    return new ZKBackedQueryMetaStore(config.get(ZK_CONNECTION_STR, "localhost:2181"));
+  }
 }

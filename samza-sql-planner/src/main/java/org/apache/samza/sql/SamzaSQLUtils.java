@@ -20,7 +20,7 @@ package org.apache.samza.sql;
 
 import org.apache.samza.SamzaException;
 import org.apache.samza.config.Config;
-import org.apache.samza.sql.metastore.SamzaSQLMetaStoreFactory;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStoreFactory;
 import org.apache.samza.sql.metastore.ZKBakedQueryMetaStoreFactory;
 
 public class SamzaSQLUtils {
@@ -29,8 +29,8 @@ public class SamzaSQLUtils {
   public static SamzaSQLMetaStoreFactory getMetaStoreFactoryInstance(Config config) {
     String factoryClassName = config.get(METADATA_STORE_FACTORY, ZKBakedQueryMetaStoreFactory.class.toString());
     try {
-      Class factoryClass = SamzaSQLUtils.class.getClassLoader().loadClass(factoryClassName);
-      return (SamzaSQLMetaStoreFactory) factoryClass.newInstance();
+      //Class factoryClass = Class.forName(factoryClassName);
+      return new ZKBakedQueryMetaStoreFactory(); // TODO: Fix the class loader issue
     } catch (Exception e) {
       throw new SamzaException(e);
     }

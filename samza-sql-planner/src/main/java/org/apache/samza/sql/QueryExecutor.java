@@ -25,8 +25,7 @@ import org.apache.samza.SamzaException;
 import org.apache.samza.config.Config;
 import org.apache.samza.job.StreamJob;
 import org.apache.samza.sql.api.Closeable;
-import org.apache.samza.sql.metastore.SamzaSQLQueryMetaStore;
-import org.apache.samza.sql.metastore.ZKBakedQueryMetaStoreFactory;
+import org.apache.samza.sql.api.metastore.SamzaSQLMetaStore;
 import org.apache.samza.sql.schema.SamzaSQLSchema;
 import org.apache.samza.sql.jdbc.SamzaSQLConnection;
 import org.apache.samza.sql.physical.JobConfigGenerator;
@@ -42,9 +41,11 @@ public class QueryExecutor implements Closeable {
   private static final Logger log = LoggerFactory.getLogger(QueryExecutor.class);
 
   private final SamzaSQLConnection connection;
-  private final SamzaSQLQueryMetaStore metadataStore;
+  private final SamzaSQLMetaStore metadataStore;
+  private final Config config;
 
   public QueryExecutor(SamzaSQLConnection connection, Config config) throws IOException, SQLException {
+    this.config = config;
     this.connection = connection;
     this.metadataStore = SamzaSQLUtils.getMetaStoreFactoryInstance(config).createMetaStore(config);
 
@@ -90,8 +91,8 @@ public class QueryExecutor implements Closeable {
     //jobConfigGenerator.setTaskCheckpointFactory(JobConfigGenerator.KAFKA_CHECKPOINT_FACTORY);
     jobConfigGenerator.setCoordinatorSystem(defaultSchemaName); // TODO: Fix this and use a separate system
     jobConfigGenerator.setCoordinatorReplicationFactor(1);
-    jobConfigGenerator.setMetadataStoreFactory(ZKBakedQueryMetaStoreFactory.class.getName());
-
+    jobConfigGenerator.setMetadataStoreFactory("org.apache.samza.sql.metastore.ZKBakedQueryMetaStoreFactory");
+    jobConfigGenerator.setMetaStoreZKConnectionString(config.get("samza.sql.metastore.zk.connect"));
   }
 
   private boolean isSamzaSQLSchema(SchemaPlus schema) {

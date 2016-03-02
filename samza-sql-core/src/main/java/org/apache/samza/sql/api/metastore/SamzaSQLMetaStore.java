@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.samza.sql.metastore;
+package org.apache.samza.sql.api.metastore;
 
 import java.io.File;
 
-public interface SamzaSQLQueryMetaStore {
+public interface SamzaSQLMetaStore {
 
   /**
    * Persist streaming SQL query to metadata store.
